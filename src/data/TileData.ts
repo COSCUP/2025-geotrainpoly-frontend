@@ -83,7 +83,7 @@ export class HexTile extends Phaser.GameObjects.Container {
       this.color = 0xD3BBDD
     }
     else if (this.type === "Booths") {
-      this.color = 0xFFFFFF
+      this.color = 0xFDDDE2
     }
     else if (this.type === "Venue") {
       this.color = 0xECE3F0
@@ -93,16 +93,16 @@ export class HexTile extends Phaser.GameObjects.Container {
 
     this.hexGraphics = this.createHex()
     this.add(this.hexGraphics)
-    if (this.type === "Booths") {
-      const boothLogo = this.scene.add.image(0, 0, ID)
-      const maxW = this.size * 1.5
-      const maxH = this.size * this.skew * 1.5
-      const scaleX = maxW / boothLogo.width
-      const scaleY = maxH / boothLogo.height
-      const scale = Math.min(scaleX, scaleY)
-      boothLogo.setScale(scale)
-      this.add(boothLogo)
-    }
+    // if (this.type === "Booths") {
+    //   const boothLogo = this.scene.add.image(0, 0, ID)
+    //   const maxW = this.size * 1.5
+    //   const maxH = this.size * this.skew * 1.5
+    //   const scaleX = maxW / boothLogo.width
+    //   const scaleY = maxH / boothLogo.height
+    //   const scale = Math.min(scaleX, scaleY)
+    //   boothLogo.setScale(scale)
+    //   this.add(boothLogo)
+    // }
     this.setSize(size * 2, Math.sqrt(3) * size * skew)
     this.setDepth(this.y)
 
