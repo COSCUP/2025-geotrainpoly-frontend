@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Icon } from '@iconify/vue'
+import QrcodeVue from 'qrcode.vue'
 
 const qrcodeRegionId = 'html5qr-code-full-region'
 
@@ -82,18 +83,28 @@ watch(cameraId, async (newCameraId) => {
   }
 })
 
+const showMyQrCode = ref(false)
+const userToken = ref('7679f08f7eaeef5e9a65a1738ae2840e');
+
 const handleShowMyQrCode = () => {
   if (qrScanner.value && qrScanner.value.isScanning) {
     qrScanner.value.stop().catch(err => console.error("Failed to stop scanner before showing my QR code:", err));
   }
-  emit('showMyQrCode');
-  alert("按下qrcode按鈕");
+  showMyQrCode.value = true;
+}
+
+const closeMyQrCode = () => {
+  showMyQrCode.value = false;
+  if (cameraId.value) {
+    startQrScanner(cameraId.value);
+  }
 }
 </script>
 
 <template>
   <div class="qr-scanner-container">
     <div
+      v-show="!showMyQrCode"
       :id="qrcodeRegionId"
       class="full-screen-scanner"
     >
@@ -102,8 +113,16 @@ const handleShowMyQrCode = () => {
       </div>
     </div>
 
-    <button class="show-my-qr-button" @click="handleShowMyQrCode">
-       <Icon icon="tabler:qrcode" class="qr-code-icon" /> <span>顯示行動條碼</span>
+    <div v-if="showMyQrCode" class="my-qrcode-display" @click="closeMyQrCode">
+      <div class="qrcode-wrapper">
+        <QrcodeVue :value="userToken" :size="250" level="H" class="generated-qrcode" />
+      </div>
+      <p class="qrcode-instruction">點擊任意處回到掃描畫面</p>
+    </div>
+
+    <button v-show="!showMyQrCode" class="show-my-qr-button" @click="handleShowMyQrCode">
+       <Icon icon="tabler:qrcode" class="qr-code-icon" />
+      <span>顯示行動條碼</span>
     </button>
   </div>
 </template>
@@ -158,6 +177,46 @@ const handleShowMyQrCode = () => {
   z-index: 2;
 }
 
+.my-qrcode-display {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 101;
+  color: white;
+  text-align: center;
+}
+
+.qrcode-title {
+  font-size: 1.5em;
+  margin-bottom: 20px;
+}
+
+.qrcode-wrapper {
+  background-color: white;
+  padding: 15px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.generated-qrcode {
+  display: block;
+}
+
+.qrcode-instruction {
+  margin-top: 10px;
+  font-size: 0.9em;
+  color: #ccc;
+}
+
 .show-my-qr-button {
   background-color: rgba(0, 0, 0, 0.4);
   color: white;
@@ -175,6 +234,7 @@ const handleShowMyQrCode = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1em;
   gap: 5px;
 }
 
