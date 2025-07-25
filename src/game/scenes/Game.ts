@@ -2,6 +2,7 @@ import { Scene } from 'phaser'
 import { HexTile } from '../../data/TileData'
 import { EventBus } from '../EventBus'
 import { GameData } from '../../data/GameData.ts'
+import { get_hextiles } from '../../api/get_hextiles.ts'
 
 function randomData(scene: Phaser.Scene, x: number, y: number) {
   const ret = {
@@ -16,12 +17,11 @@ function randomData(scene: Phaser.Scene, x: number, y: number) {
 
   const r = Math.random()
   if (r < 0.25) {
-    ret.type = 'Booths'
-    const index = Math.min(Math.floor(Math.random() * GameData.boothIDs.length), GameData.boothIDs.length - 1)
-    ret.ID = GameData.boothIDs[index]
+    ret.type = 'booths'
+    ret.ID = 'mysql'
   }
   else {
-    ret.type = 'Venue'
+    ret.type = 'venue'
     ret.ID = 'TR212'
   }
   return ret
@@ -31,22 +31,22 @@ export class Game extends Scene {
   private contentContainer!: Phaser.GameObjects.Container
   private dragStartY = 0
   private containerStartY = 0
-  private boothIDs: string[]
+  private boothImages: string[]
 
-  constructor(boothIDs: string[]) {
+  constructor(boothImages: string[]) {
     super('MainGame')
-    this.boothIDs = boothIDs
+    this.boothImages = boothImages
   }
 
   preload() {
-    this.boothIDs.forEach((key) => {
-      const url = `https://coscup.org/2024/images/sponsor/${key}.png`
-      this.load.image(key, url)
+    this.boothImages.forEach((url) => {
+      this.load.image('mysql', url) // TODO: replase 'mysql' with booth ID
     })
-    GameData.boothIDs = this.boothIDs
+    this.load.image('eye', '../../../public/assets/eye.png')
+    this.load.image('no-eye', '../../../public/assets/no-eye.png')
   }
 
-  create() {
+  async create() {
     GameData.screenWidth = this.cameras.main.width
     GameData.screenHeight = this.cameras.main.height
     GameData.hexSize = GameData.screenWidth / 6
@@ -72,7 +72,7 @@ export class Game extends Scene {
           x: x,
           y: y,
           size: GameData.hexSize,
-          type: "Base",
+          type: "base",
           skew: GameData.skew
         })
         this.contentContainer.add(tile)
@@ -81,6 +81,26 @@ export class Game extends Scene {
           GameData.path.push(tile)
         }
       }
+    }
+
+    const path: any[] = await get_hextiles()
+    let x = GameData.path[0].centerX
+    let y = GameData.path[0].centerY
+    for (let idx = 0; idx < path.length; idx++) {
+      const pos = this.calNextPos(x, y, path[idx].x)
+      x = pos.x
+      y = pos.y
+      const tile = new HexTile({
+        scene: this,
+        x: x,
+        y: y,
+        size: GameData.hexSize,
+        skew: GameData.skew,
+        type: path[idx].type,
+        ID: path[idx].booth_id
+      })
+      this.contentContainer.addAt(tile, 0)
+      GameData.path.push(tile)
     }
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -105,7 +125,54 @@ export class Game extends Scene {
       this.addNextHexTile()
     })
 
+    const buttonSize = 60
+    const canvaSize = buttonSize + 20
+    const canvas = this.textures.createCanvas('eye-button', canvaSize, canvaSize)
+    const ctx = canvas!.getContext()
+
+    // set button background
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.arc(canvaSize / 2, canvaSize / 2, buttonSize / 2 - 5, 0, Math.PI * 2)
+    ctx.fill()
+
+    // add button shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'
+    ctx.shadowBlur = 10
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
+    ctx.fill()
+
+    canvas!.refresh()
+
+    this.add.image(GameData.screenWidth - 40, 40, 'eye-button').setOrigin(0.5)
+
+    const infoBtn = this.add.image(GameData.screenWidth - 40, 40, 'no-eye').setOrigin(0.5).setScale(0.5).setInteractive()
+    infoBtn.setScrollFactor(0)
+
+    infoBtn.on('pointerdown', () => {
+      this.showAllTileInfo(true)
+      infoBtn.setTexture('eye')
+    })
+
+    infoBtn.on('pointerup', () => {
+      this.showAllTileInfo(false)
+      infoBtn.setTexture('no-eye')
+    })
+
     EventBus.emit('current-scene-ready', this)
+  }
+
+  calNextPos(curX: number, curY: number, dir: number) {
+    if (dir === -1) {
+      return {x: curX - GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+    }
+    else if (dir === 1) {
+      return {x: curX + GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+    }
+    else {
+      return {x: curX, y: curY - GameData.hexHeight}
+    }
   }
 
   chooseNextPos(curX: number, curY: number) {
@@ -113,7 +180,7 @@ export class Game extends Scene {
     let noRight = false
 
     if (GameData.path.length === 1) {
-      return {x: curX, y: curY - GameData.hexHeight}
+      return this.calNextPos(curX, curY, 0)
     }
     else {
       const last_curX = GameData.path[GameData.path.length - 2].centerX
@@ -123,13 +190,13 @@ export class Game extends Scene {
 
     const r = Math.random()
     if (r < 0.35 && curX != GameData.tilePos[0] && !noLeft) {
-      return {x: curX - GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+      return this.calNextPos(curX, curY, -1)
     }
     else if (r < 0.7 && curX != GameData.tilePos[2] && !noRight) {
-      return {x: curX + GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+      return this.calNextPos(curX, curY, 1)
     }
     else {
-      return {x: curX, y: curY - GameData.hexHeight}
+      return this.calNextPos(curX, curY, 0)
     }
   }
 
@@ -146,5 +213,11 @@ export class Game extends Scene {
       duration: 1000,
       ease: 'Sine.easeInOut',
     })
+  }
+
+  showAllTileInfo(show: boolean) {
+    for (const tile of GameData.path) {
+      tile.setInfoVisible(show)
+    }
   }
 }

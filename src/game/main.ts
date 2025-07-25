@@ -1,6 +1,7 @@
 import type { Types } from 'phaser'
 import { AUTO, Game } from 'phaser'
 import { Game as MainGame } from './scenes/Game'
+import { get_booths_images } from '../api/get_booths.ts'
 
 // Find out more information about the Game Config at:
 // https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
@@ -17,11 +18,9 @@ const config: Types.Core.GameConfig = {
 }
 
 export async function StartGame(parent: string): Promise<Phaser.Game> {
-  const res = await fetch('https://coscup.org/2024/json/sponsor.json')
-  const json = await res.json()
-  const boothIDs: string[] = json.map((s: any) => (s.id))
+  const boothImages: string[] = await get_booths_images()
 
-  const scene = new MainGame(boothIDs)
+  const scene = new MainGame(boothImages)
 
   return new Game({
     ...config,

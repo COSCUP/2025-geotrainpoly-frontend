@@ -7,6 +7,7 @@ import { GameData } from '../data/GameData.ts'
 import StartGame from '../game/main'
 import { Icon } from '@iconify/vue'
 import Danmaku from './Danmaku.vue'
+import { get_booths } from '../api/get_booths.ts'
 
 const emit = defineEmits(['current-active-scene'])
 // Save the current scene instance
@@ -26,20 +27,7 @@ marked.setOptions({ renderer })
 onMounted(async () => {
   game.value = await StartGame('game-container')
 
-  const boothsDataUrl = 'https://coscup.org/2024/json/sponsor.json'
-  fetch(boothsDataUrl)
-    .then(res => res.json())
-    .then(json => {
-      boothsData.value = json.reduce(
-        (acc: any, item: any) => {
-          acc[item.id] = item
-          return acc
-        }, {}
-      )
-    })
-    .catch(err => {
-      console.error('Failed to load JSON:', err)
-    })
+  boothsData.value = await get_booths()
 
   EventBus.on('current-scene-ready', (sceneInstance: Phaser.Scene) => {
     emit('current-active-scene', sceneInstance)
@@ -118,7 +106,7 @@ function toggleLike(id: number) {
 }
 
 watch([showPopup, popupData], async ([isOpen, data]) => {
-  if (isOpen && data?.type === 'Venue') {
+  if (isOpen && data?.type === 'venue') {
     comments.value = [
       {
         "id": 1,
@@ -265,21 +253,21 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
   <div class="popup-overlay" id="popup" v-if="showPopup">
     <div class="popup-content">
       <button class="popup-close" id="popupClose" @click="closePopup()">x</button>
-      <div v-if="popupData?.type === 'Base'">
+      <div v-if="popupData?.type === 'base'">
         <img
           alt="COSCUP x RubyConf Taiwan 2025 banner"
           src="/assets/banner-mobile.png"
         >
       </div>
-      <div v-else-if="popupData?.type === 'Booths'" class="Booths">
-        <h2>{{ boothsData[popupData?.ID].name['zh-TW'] }}</h2>
+      <div v-else-if="popupData?.type === 'booths'" class="Booths">
+        <h2>{{ boothsData['1'].name }}</h2> <!-- TODO: replace '1' with ID-->
         <img
-          :alt="boothsData[popupData?.ID].name['zh-TW']"
-          :src="'https://coscup.org/' + boothsData[popupData?.ID].image"
-        >
-        <div class="booths-content" v-html="markedIntro(boothsData[popupData?.ID].intro['zh-TW'] )"></div>
+          :alt="boothsData['1'].name" 
+          :src="boothsData['1'].logo"
+        > <!-- TODO: replace '1' with ID-->
+        <div class="booths-content" v-html="markedIntro(boothsData['1'].description )"></div> <!-- TODO: replace '1' with ID-->
       </div>
-      <div v-else-if="popupData?.type === 'Venue'" class="Venue">
+      <div v-else-if="popupData?.type === 'venue'" class="Venue">
         <h2>{{ popupData?.ID }}</h2>
         <div class="comment-list">
           <div v-for="comment in comments" :key="comment.id" class="comment-item">
@@ -304,7 +292,7 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
       </div>
     </div>
   </div>
-  <Danmaku :comments="topComments" v-if="popupData?.type === 'Venue'"/>
+  <Danmaku :comments="topComments" v-if="popupData?.type === 'venue'"/>
 </template>
 
 <style scoped>

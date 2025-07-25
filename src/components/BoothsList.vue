@@ -2,6 +2,7 @@
 import { onMounted, ref, computed } from 'vue'
 import { marked } from 'marked'
 import { GameData } from '../data/GameData'
+import { get_booths } from '../api/get_booths'
 
 const boothsData = ref()
 const activeID = ref<number | null>(null)
@@ -11,21 +12,8 @@ renderer.link = function ({href, title, text}) {
 }
 marked.setOptions({ renderer })
 
-onMounted(() => {
-  const boothsDataUrl = 'https://coscup.org/2024/json/sponsor.json'
-  fetch(boothsDataUrl)
-    .then(res => res.json())
-    .then(json => {
-      boothsData.value = json.reduce(
-        (acc: any, item: any) => {
-          acc[item.id] = item
-          return acc
-        }, {}
-      )
-    })
-    .catch(err => {
-      console.error('Failed to load JSON:', err)
-    })
+onMounted(async () => {
+  boothsData.value = await get_booths()
 })
 
 function toggleBooths(id: number) {
@@ -49,15 +37,15 @@ function markedIntro(intro: string) {
       >
         <div class="booths-header">
           <img 
-            :src="'https://coscup.org/' + boothsData[id].image" 
-            :alt="boothsData[id].name['zh-TW']" class="booths-logo" />
-          <span class="booths-name">{{ boothsData[id].name['zh-TW'] }}</span>
+            :src=booths.logo
+            :alt="booths.name" class="booths-logo" />
+          <span class="booths-name">{{ booths.name }}</span>
         </div>
         <transition name="fade-slide">
           <div
             v-if="activeID === id"
             class="booths-detail"
-            v-html="markedIntro(booths.intro['zh-TW'])"
+            v-html="markedIntro(booths.description)"
           >
           </div>
         </transition>
