@@ -78,7 +78,6 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
-  // 點擊任何地方關閉稱號列表
   document.addEventListener('click', closeDropdownOnClickOutside);
 });
 
@@ -87,7 +86,6 @@ onUnmounted(() => {
   document.removeEventListener('click', closeDropdownOnClickOutside);
 });
 
-// 點擊外部關閉稱號列表的函數
 const closeDropdownOnClickOutside = (event: MouseEvent) => {
   const titleContainer = document.querySelector('.title-container');
   if (titleContainer && !titleContainer.contains(event.target as Node)) {
