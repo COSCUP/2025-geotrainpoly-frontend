@@ -3,7 +3,7 @@ import { onMounted, ref, computed } from 'vue'
 import { marked } from 'marked'
 import { GameData } from '../data/GameData'
 
-const boothsData = ref()
+const boothsData = ref([])
 const activeID = ref<number | null>(null)
 const renderer = new marked.Renderer()
 renderer.link = function ({href, title, text}) {
@@ -12,20 +12,20 @@ renderer.link = function ({href, title, text}) {
 marked.setOptions({ renderer })
 
 onMounted(() => {
-  const boothsDataUrl = 'https://coscup.org/2024/json/sponsor.json'
-  fetch(boothsDataUrl)
-    .then(res => res.json())
-    .then(json => {
-      boothsData.value = json.reduce(
-        (acc: any, item: any) => {
-          acc[item.id] = item
-          return acc
-        }, {}
-      )
-    })
-    .catch(err => {
-      console.error('Failed to load JSON:', err)
-    })
+  // const boothsDataUrl = 'https://coscup.org/2024/json/sponsor.json'
+  // fetch(boothsDataUrl)
+  //   .then(res => res.json())
+  //   .then(json => {
+  //     boothsData.value = json.reduce(
+  //       (acc: any, item: any) => {
+  //         acc[item.id] = item
+  //         return acc
+  //       }, {}
+  //     )
+  //   })
+  //   .catch(err => {
+  //     console.error('Failed to load JSON:', err)
+  //   })
 })
 
 function toggleBooths(id: number) {
