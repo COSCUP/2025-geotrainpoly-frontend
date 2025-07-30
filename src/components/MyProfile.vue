@@ -391,9 +391,9 @@ input:focus {
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  outline: none; /* 移除點擊時的藍色邊框 */
-  -webkit-tap-highlight-color: transparent; /* 移除移動設備上點擊時的灰色/藍色背景 */
-  user-select: none; /* 禁用文字選擇，防止選中高亮 */
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .avatar-option:hover {
@@ -402,13 +402,12 @@ input:focus {
 }
 
 .avatar-option.selected {
-  border-color: #F8C0C8; /* 選中時的邊框顏色 */
+  border-color: #F8C0C8; 
   box-shadow: 0 0 0 4px #F8C0C8, 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* 確保點擊時的背景色與非點擊時一致，或者設置為透明 */
 .avatar-option:active {
-  background-color: transparent; /* 點擊時保持透明背景，如果不需要點擊背景效果 */
+  background-color: transparent;
 }
 
 .avatar-option-image {
@@ -427,14 +426,13 @@ input:focus {
   font-size: 16px;
   font-family: 'Zen Maru Gothic', sans-serif;
   transition: background-color 0.2s ease;
-  outline: none; /* 移除點擊時的藍色邊框 */
-  -webkit-tap-highlight-color: transparent; /* 移除移動設備上點擊時的灰色/藍色背景 */
-  user-select: none; /* 禁用文字選擇，防止選中高亮 */
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-/* 確保點擊時的背景色與非點擊時一致 */
 .modal-confirm-button:active {
-  background-color: #aaa; /* 點擊時保持原色，或者調整為你希望的點擊效果 */
+  background-color: #aaa;
 }
 
 .popup-close {
@@ -450,13 +448,12 @@ input:focus {
   font-size: 20px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  outline: none; /* 移除點擊時的藍色邊框 */
-  -webkit-tap-highlight-color: transparent; /* 移除移動設備上點擊時的灰色/藍色背景 */
-  user-select: none; /* 禁用文字選擇，防止選中高亮 */
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
-/* 確保點擊時的背景色與非點擊時一致 */
 .popup-close:active {
-  background-color: #ff5f5f; /* 點擊時保持原色，或者調整為你希望的點擊效果 */
+  background-color: #ff5f5f;
 }
 </style>
