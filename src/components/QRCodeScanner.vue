@@ -30,7 +30,7 @@ const config = {
 }
 
 const showMyQrCode = ref(false)
-const userToken = ref('7679f08f7eaeef5e9a65a1738ae2840e')
+const userToken = ref('')
 
 const startQrScanner = async (id: string) => {
   await stopQrScanner()
@@ -76,6 +76,13 @@ const stopQrScanner = async () => {
 }
 
 onMounted(async () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const tokenFromUrl = urlParams.get('token')
+  if (tokenFromUrl) {
+    userToken.value = tokenFromUrl
+    console.log(userToken.value)
+  }
+
   const devices = await Html5Qrcode.getCameras()
   if (devices.length > 0) {
     cameraId.value = devices[0].id
