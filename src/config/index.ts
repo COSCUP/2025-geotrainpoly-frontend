@@ -4,11 +4,6 @@ import BoothsList from '../components/BoothsList.vue'
 import QRCodeScanner from '../components/QRCodeScanner.vue'
 import MyProfile from '../components/MyProfile.vue'
 
-const handleQrCodeScanned = (decodedText: string) => {
-  console.log('QR Code 掃描成功:', decodedText)
-  router.push({ path: '/'});
-}
-
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
@@ -24,9 +19,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/qrcode-scanner',
     name: 'qrcode-scanner',
     component: QRCodeScanner,
-    props: (route) => ({
-      qrCodeSuccessCallback: handleQrCodeScanned,
-    }),
   },
   {
     path: '/profile',

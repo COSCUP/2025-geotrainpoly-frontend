@@ -3,100 +3,115 @@ import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Icon } from '@iconify/vue'
 import QrcodeVue from 'qrcode.vue'
+import { useRouter, useRoute } from 'vue-router'
+
+const router = useRouter()
+const route = useRoute()
 
 const qrcodeRegionId = 'html5qr-code-full-region'
-
-const props = defineProps<{
-  qrCodeSuccessCallback: (decodedText: string) => void
-}>()
-
-const emit = defineEmits(['showMyQrCode']);
+const emit = defineEmits(['showMyQrCode'])
 const cameraId = ref<string | null>(null)
 const qrScanner = ref<Html5Qrcode | null>(null)
 
 const config = {
   fps: 10,
   qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-    const minDimension = Math.min(viewfinderWidth, viewfinderHeight);
-    const qrboxSize = Math.floor(minDimension * 0.7); 
-    return { width: qrboxSize, height: qrboxSize };
+    const minDimension = Math.min(viewfinderWidth, viewfinderHeight)
+    const qrboxSize = Math.floor(minDimension * 0.7)
+    return { width: qrboxSize, height: qrboxSize }
   },
-  aspectRatio: 1, 
+  aspectRatio: 1,
   videoConstraints: {
-    facingMode: 'environment', 
+    facingMode: 'environment',
     width: { ideal: 1920 },
     height: { ideal: 1080 },
-    aspectRatio: { min: 1, max: 2 } 
-  }
+    aspectRatio: { min: 1, max: 2 },
+  },
 }
 
-onMounted(async () => {
-  try {
-    const devices = await Html5Qrcode.getCameras()
-    if (devices && devices.length > 0) {
-      cameraId.value = devices[0].id
-      if (cameraId.value) {
-        startQrScanner(cameraId.value); 
-      }
-    } else {
-      console.log('未找到任何相機設備。');
-    }
-  } catch (error) {
-    console.log('permission denied or camera error:', error);
-  }
-})
+const showMyQrCode = ref(false)
+const userToken = ref('7679f08f7eaeef5e9a65a1738ae2840e')
 
-onUnmounted(async () => {
-  if (qrScanner.value && qrScanner.value.isScanning) {
-    try {
-      await qrScanner.value.stop()
-      console.log('QR 掃描器已停止')
-    } catch (error) {
-      console.error('QR 掃描器失敗：', error)
-    }
-  }
-})
-
-async function startQrScanner(id: string) {
-  if (qrScanner.value && qrScanner.value.isScanning) {
-    await qrScanner.value.stop().catch(err => console.error("Failed to stop previous scanner:", err));
-  }
+const startQrScanner = async (id: string) => {
+  await stopQrScanner()
   qrScanner.value = new Html5Qrcode(qrcodeRegionId)
   try {
     await qrScanner.value.start(
-      config.videoConstraints, 
+      config.videoConstraints,
       config,
-      props.qrCodeSuccessCallback,
+      async (decodedText: string) => {
+        console.log('QR Code 掃描成功:', decodedText)
+        await stopQrScanner()
+        router.push({ path: '/' })
+      },
       (errorMessage: string) => {
-        console.warn(`QR Scanner error: ${errorMessage}`);
+        
       }
     )
-    console.log("QR Scanner started successfully.");
   } catch (error) {
-    console.error('Failed to start QR Scanner:', error)
+    console.error('啟動 QR 掃描器失敗：', error)
   }
 }
 
-watch(cameraId, async (newCameraId) => {
-  if (newCameraId) {
-    startQrScanner(newCameraId);
+const stopQrScanner = async () => {
+  if (qrScanner.value && qrScanner.value.isScanning) {
+    try {
+      console.log('停止 QR 掃描器中...')
+      await qrScanner.value.stop()
+
+      const videoElement = document
+        .getElementById(qrcodeRegionId)
+        ?.querySelector('video')
+
+      if (videoElement && videoElement.srcObject instanceof MediaStream) {
+        videoElement.srcObject.getTracks().forEach((track) => track.stop())
+        videoElement.srcObject = null
+        console.log('MediaStream 已完全清除')
+      }
+    } catch (error) {
+      console.error('停止 QR 掃描器失敗：', error)
+    }
+  }
+  qrScanner.value = null
+}
+
+onMounted(async () => {
+  const devices = await Html5Qrcode.getCameras()
+  if (devices.length > 0) {
+    cameraId.value = devices[0].id
+  }
+
+  if (route.path === '/qrcode-scanner' && cameraId.value && !showMyQrCode.value) {
+    await startQrScanner(cameraId.value)
   }
 })
 
-const showMyQrCode = ref(false)
-const userToken = ref('7679f08f7eaeef5e9a65a1738ae2840e');
-
-const handleShowMyQrCode = () => {
-  if (qrScanner.value && qrScanner.value.isScanning) {
-    qrScanner.value.stop().catch(err => console.error("Failed to stop scanner before showing my QR code:", err));
+watch(
+  () => route.path,
+  async (newPath) => {
+    if (newPath === '/qrcode-scanner') {
+      if (cameraId.value && !showMyQrCode.value) {
+        await startQrScanner(cameraId.value)
+      }
+    } else {
+      await stopQrScanner()
+    }
   }
-  showMyQrCode.value = true;
+)
+
+onUnmounted(async () => {
+  await stopQrScanner()
+})
+
+const handleShowMyQrCode = async () => {
+  await stopQrScanner()
+  showMyQrCode.value = true
 }
 
-const closeMyQrCode = () => {
-  showMyQrCode.value = false;
-  if (cameraId.value) {
-    startQrScanner(cameraId.value);
+const closeMyQrCode = async () => {
+  showMyQrCode.value = false
+  if (route.path === '/qrcode-scanner' && cameraId.value) {
+    await startQrScanner(cameraId.value)
   }
 }
 </script>
@@ -193,11 +208,6 @@ const closeMyQrCode = () => {
   text-align: center;
 }
 
-.qrcode-title {
-  font-size: 1.5em;
-  margin-bottom: 20px;
-}
-
 .qrcode-wrapper {
   background-color: white;
   padding: 15px;
@@ -218,7 +228,7 @@ const closeMyQrCode = () => {
 }
 
 .show-my-qr-button {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: gray;
   color: white;
   border: none;
   padding: 10px 25px;
