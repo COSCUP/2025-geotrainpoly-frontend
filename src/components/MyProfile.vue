@@ -41,6 +41,8 @@ const closeAvatarModal = () => {
   selectedAvatar.value = null;
 };
 
+const showTitleDropdown = ref(false);
+
 const availableTitles = computed(() => {
   const titles = [{ id: 0, label: '新手小啄', icon: '' }];
   player.value.achievements.forEach(achievement => {
@@ -55,6 +57,15 @@ const availableTitles = computed(() => {
   return titles;
 });
 
+const toggleTitleDropdown = () => {
+  showTitleDropdown.value = !showTitleDropdown.value;
+};
+
+const selectTitle = (titleLabel: string) => {
+  player.value.title = titleLabel;
+  showTitleDropdown.value = false;
+};
+
 const handleKeydown = (event: KeyboardEvent) => {
   const key = parseInt(event.key);
   if (key >= 1 && key <= player.value.achievements.length) {
@@ -67,11 +78,22 @@ const handleKeydown = (event: KeyboardEvent) => {
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeydown);
+  // 點擊任何地方關閉稱號列表
+  document.addEventListener('click', closeDropdownOnClickOutside);
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
+  document.removeEventListener('click', closeDropdownOnClickOutside);
 });
+
+// 點擊外部關閉稱號列表的函數
+const closeDropdownOnClickOutside = (event: MouseEvent) => {
+  const titleContainer = document.querySelector('.title-container');
+  if (titleContainer && !titleContainer.contains(event.target as Node)) {
+    showTitleDropdown.value = false;
+  }
+};
 </script>
 
 <template>
@@ -92,12 +114,24 @@ onUnmounted(() => {
       </div>
 
       <div class="title-container">
-        <select v-model="player.title" class="title-select">
-          <option v-for="title in availableTitles" :key="title.id" :value="title.label">
-            {{ title.label }}
-          </option>
-        </select>
+        <div class="current-title" @click="toggleTitleDropdown">
+          {{ player.title }}
         </div>
+
+        <transition name="fade-slide-down">
+          <div v-if="showTitleDropdown" class="title-dropdown-list">
+            <div
+              v-for="title in availableTitles"
+              :key="title.id"
+              class="title-dropdown-item"
+              :class="{ 'selected-title': player.title === title.label }"
+              @click="selectTitle(title.label)"
+            >
+              {{ title.label }}
+            </div>
+          </div>
+        </transition>
+      </div>
     </div>
 
     <div class="scrollable-content">
@@ -115,7 +149,7 @@ onUnmounted(() => {
     <div v-if="showAvatarModal" class="avatar-modal-overlay" @click.self="closeAvatarModal">
       <div class="avatar-modal-content">
         <button class="popup-close" @click="closeAvatarModal">x</button>
-        <h3>選擇你的頭像</h3>
+        <h3>選擇喜歡的頭像</h3>
         <div class="avatar-options">
           <div
             v-for="(avatarPath, index) in avatarList"
@@ -250,21 +284,9 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   position: relative;
-}
-
-.title-select {
-  flex-grow: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 16px;
-  font-family: 'Zen Maru Gothic', sans-serif;
-  color: #333;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
   cursor: pointer;
-  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 .title-container::after {
@@ -274,6 +296,74 @@ onUnmounted(() => {
   color: #888;
   font-size: 12px;
   pointer-events: none;
+}
+
+.current-title {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 16px;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+  border: 1px solid #e0e6ec;
+  padding: 5px 0;
+}
+
+.title-dropdown-item {
+  padding: 10px 15px;
+  font-size: 16px;
+  font-family: 'Zen Maru Gothic', sans-serif;
+  color: #333;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.title-dropdown-item:hover {
+  background-color: #f0f5f9;
+}
+
+
+.title-dropdown-item:active {
+  background-color: #e6eef4;
+}
+
+.title-dropdown-item.selected-title {
+  background-color: #e6eef4;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.fade-slide-down-enter-active,
+.fade-slide-down-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-slide-down-enter-from,
+.fade-slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .scrollable-content {
@@ -339,7 +429,6 @@ input:focus {
   outline: none;
 }
 
-/* Modal 相關的 CSS 樣式 */
 .avatar-modal-overlay {
   position: fixed;
   top: 0;
