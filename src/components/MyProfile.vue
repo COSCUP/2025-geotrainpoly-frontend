@@ -1,104 +1,124 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { Icon } from '@iconify/vue'
-import { achievements } from '../data/AchievementsData';
+import { achievements as allAchievements } from '../data/AchievementsData'
+import type { Medal } from '../data/AchievementsData'
+import { getUserProfile } from '../api/get_profiles'
 
+type PlayerProfile = {
+  avatar: string
+  nickname: string
+  title: string
+  points: number
+  achievements: Medal[]
+}
+
+// 頭像選項
 const avatarList = [
   '/assets/人類小啄頭像1.png',
   '/assets/人類小啄頭像2.png',
   '/assets/人類小啄頭像3.png'
-];
+]
 
-const player = ref({
-  avatar: avatarList.length > 0 ? avatarList [0] : '',
-  nickname: '鱈魚',
-  title: '新手小啄',
-  points: 680,
-  achievements: achievements,
-});
+// 玩家資料
+const player = ref<PlayerProfile>({
+  avatar: avatarList[0],
+  nickname: '',
+  title: '',
+  points: 0,
+  achievements: []
+})
 
-const showAvatarModal = ref(false);
-const selectedAvatar = ref<string | null>(null);
-
-const openAvatarModal = () => {
-  showAvatarModal.value = true;
-  selectedAvatar.value = player.value.avatar;
-};
-
-const selectAvatar = (avatarPath: string) => {
-  selectedAvatar.value = avatarPath;
-};
-
-const confirmAvatar = () => {
-  if (selectedAvatar.value) {
-    player.value.avatar = selectedAvatar.value;
-  }
-  showAvatarModal.value = false;
-};
-
-const closeAvatarModal = () => {
-  showAvatarModal.value = false;
-  selectedAvatar.value = null;
-};
-
-const showTitleDropdown = ref(false);
-
+// 成就對應的稱號
 const availableTitles = computed(() => {
-  const titles = [{ id: 0, label: '新手小啄', icon: '' }];
-  player.value.achievements.forEach(achievement => {
-    if (achievement.unlocked) {
-      titles.push({
-        id: achievement.id,
-        label: achievement.label,
-        icon: achievement.icon
-      });
+  return [
+    { id: 0, label: '新手小啄', icon: '' },
+    ...player.value.achievements
+      .filter(a => a.unlocked)
+      .map(a => ({ id: a.id, label: a.name, icon: a.icon }))
+  ]
+})
+
+onMounted(async () => {
+  window.addEventListener('keydown', handleKeydown)
+  document.addEventListener('click', closeDropdownOnClickOutside)
+
+  try {
+    const user = await getUserProfile()
+    console.log('User profile from API:', user)
+
+    if (user) {
+      player.value.nickname = user.name
+      player.value.points = user.points
+      player.value.title = user.title
+
+      const unlockedIds = user.achievements.map((a: any) => a.achievement_1d)
+      player.value.achievements = allAchievements.map(m => ({
+        ...m,
+        unlocked: unlockedIds.includes(m.id)
+      }))
     }
-  });
-  return titles;
-});
-
-const toggleTitleDropdown = () => {
-  showTitleDropdown.value = !showTitleDropdown.value;
-};
-
-const selectTitle = (titleLabel: string) => {
-  player.value.title = titleLabel;
-  showTitleDropdown.value = false;
-};
-
-const handleKeydown = (event: KeyboardEvent) => {
-  const key = parseInt(event.key);
-  if (key >= 1 && key <= player.value.achievements.length) {
-    const medalToUnlock = player.value.achievements.find(m => m.id === key);
-    if (medalToUnlock && !medalToUnlock.unlocked) {
-      medalToUnlock.unlocked = true;
-    }
+  } catch (err) {
+    console.error('Failed to load user profile:', err)
   }
-};
-
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown);
-  document.addEventListener('click', closeDropdownOnClickOutside);
-});
+})
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown);
-  document.removeEventListener('click', closeDropdownOnClickOutside);
-});
+  window.removeEventListener('keydown', handleKeydown)
+  document.removeEventListener('click', closeDropdownOnClickOutside)
+})
 
+const showTitleDropdown = ref(false)
+const toggleTitleDropdown = () => {
+  showTitleDropdown.value = !showTitleDropdown.value
+}
+const selectTitle = (label: string) => {
+  player.value.title = label
+  showTitleDropdown.value = false
+}
 const closeDropdownOnClickOutside = (event: MouseEvent) => {
-  const titleContainer = document.querySelector('.title-container');
-  if (titleContainer && !titleContainer.contains(event.target as Node)) {
-    showTitleDropdown.value = false;
+  const titleEl = document.querySelector('.title-container')
+  if (titleEl && !titleEl.contains(event.target as Node)) {
+    showTitleDropdown.value = false
   }
-};
+}
+
+// 成就解鎖的測試鍵 
+// API 弄好要記得刪掉
+const handleKeydown = (event: KeyboardEvent) => {
+  const key = parseInt(event.key)
+  if (!isNaN(key)) {
+    const medal = player.value.achievements.find(m => m.id === key)
+    if (medal && !medal.unlocked) medal.unlocked = true
+  }
+}
+
+// 選擇頭像
+const showAvatarModal = ref(false)
+const selectedAvatar = ref<string | null>(null)
+
+const openAvatarModal = () => {
+  showAvatarModal.value = true
+  selectedAvatar.value = player.value.avatar
+}
+const selectAvatar = (path: string) => {
+  selectedAvatar.value = path
+}
+const confirmAvatar = () => {
+  if (selectedAvatar.value) player.value.avatar = selectedAvatar.value
+  closeAvatarModal()
+}
+const closeAvatarModal = () => {
+  showAvatarModal.value = false
+  selectedAvatar.value = null
+}
 </script>
 
 <template>
   <div id="myProfile">
     <div class="avatar-section">
       <div class="avatar-container">
-        <img :src="player.avatar" alt="Player Avatar" class="avatar-image">
+        <img :src="player.avatar" alt="Player Avatar" class="avatar-image" @click="openAvatarModal">
         <button class="edit-avatar-button" @click="openAvatarModal">
           <Icon icon="material-symbols:edit-outline" />
         </button>
@@ -113,7 +133,7 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
 
       <div class="title-container">
         <div class="current-title" @click="toggleTitleDropdown">
-          {{ player.title }}
+          {{ player.title || '新手小啄' }}
         </div>
 
         <transition name="fade-slide-down">
@@ -138,7 +158,7 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
           <div class="achievements-grid">
             <div v-for="medal in player.achievements" :key="medal.id" class="medal-item">
               <Icon :icon="medal.icon" class="medal-icon" :style="{ color: medal.unlocked ? '#F8C0C8' : '#888' }" />
-              <span class="medal-label">{{ medal.unlocked ? medal.label : '？？？' }}</span>
+              <span class="medal-label">{{ medal.unlocked ? medal.name : '？？？' }}</span>
             </div>
           </div>
         </div>
@@ -207,7 +227,7 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
 .edit-avatar-button {
   position: absolute;
   bottom: 5px;
-  right: calc(50% - 75px + 5px);
+  right: calc(50% - 70px);
   width: 30px;
   height: 30px;
   background-color: white;

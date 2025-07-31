@@ -8,7 +8,12 @@ export const GameData = {
   hexSize: 0,
   bottomBarHeight: 70,
   popupOpen: false,
-  boothIDs: [] as string[],
+  apiBaseUrl: 'https://coscup.mirumo.cc/api',
+  get apiToken() {
+    const urlParams = new URLSearchParams(window.location.search)
+    // return urlParams.get('token')
+    return 'AHTr0mzVExM671dbHQP6fz0YvjwrVgYh40fw'
+  },
   get hexWidth() {
     return this.hexSize * 2
   },
