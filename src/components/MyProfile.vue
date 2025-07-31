@@ -13,7 +13,7 @@ const player = ref({
   avatar: avatarList.length > 0 ? avatarList [0] : '',
   nickname: '鱈魚',
   title: '新手小啄',
-  points: 0,
+  points: 680,
   achievements: achievements,
 });
 
@@ -348,7 +348,6 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
 }
 
 .title-dropdown-item.selected-title {
-  background-color: #e6eef4;
   font-weight: bold;
   color: #007bff;
 }
@@ -451,6 +450,7 @@ input:focus {
   width: 90%;
   max-width: 400px;
   box-sizing: border-box;
+  padding: 20px;
 }
 
 .avatar-modal-content h3 {
@@ -458,7 +458,7 @@ input:focus {
   font-family: 'Zen Maru Gothic', sans-serif;
   font-weight: bold;
   color: #333;
-  margin-bottom: 25px;
+  margin: 10px 0px;
 }
 
 .avatar-options {
@@ -490,7 +490,7 @@ input:focus {
 
 .avatar-option.selected {
   border-color: #F8C0C8; 
-  box-shadow: 0 0 0 4px #F8C0C8, 0 4px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 0 0 3px #F8C0C8, 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .avatar-option:active {
@@ -504,7 +504,7 @@ input:focus {
 }
 
 .modal-confirm-button {
-  background-color: #aaa;
+  background-color: #F8C0C8;
   color: white;
   border: none;
   padding: 10px 25px;
