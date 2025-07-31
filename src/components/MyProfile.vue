@@ -43,6 +43,13 @@ onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
   document.addEventListener('click', closeDropdownOnClickOutside)
 
+  const savedAvatar = localStorage.getItem('playerAvatar');
+  if (savedAvatar) {
+    player.value.avatar = savedAvatar;
+  } else {
+    player.value.avatar = avatarList[0];
+  }
+
   try {
     const user = await getUserProfile()
     console.log('User profile from API:', user)
@@ -105,7 +112,10 @@ const selectAvatar = (path: string) => {
   selectedAvatar.value = path
 }
 const confirmAvatar = () => {
-  if (selectedAvatar.value) player.value.avatar = selectedAvatar.value
+  if (selectedAvatar.value) {
+    player.value.avatar = selectedAvatar.value
+    localStorage.setItem('playerAvatar', selectedAvatar.value);
+  }
   closeAvatarModal()
 }
 const closeAvatarModal = () => {
