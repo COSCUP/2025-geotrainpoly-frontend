@@ -4,6 +4,7 @@ import { Icon } from '@iconify/vue'
 import { achievements as allAchievements } from '../data/AchievementsData'
 import type { Medal } from '../data/AchievementsData'
 import { getUserProfile } from '../api/get_profiles'
+import { putProfile } from '../api/put_profiles'
 
 type PlayerProfile = {
   avatar: string
@@ -79,9 +80,21 @@ const showTitleDropdown = ref(false)
 const toggleTitleDropdown = () => {
   showTitleDropdown.value = !showTitleDropdown.value
 }
-const selectTitle = (label: string) => {
-  player.value.title = label
-  showTitleDropdown.value = false
+const selectTitle = async (label: string) => {
+  if (player.value.title === label) {
+    showTitleDropdown.value = false;
+    return;
+  }
+
+  try {
+    const response = await putProfile({ title: label });
+    console.log('Update title API response:', response);
+    player.value.title = label;
+  } catch (error) {
+    console.error('Failed to update title:', error);
+  }
+
+  showTitleDropdown.value = false;
 }
 const closeDropdownOnClickOutside = (event: MouseEvent) => {
   const titleEl = document.querySelector('.title-container')
