@@ -11,8 +11,7 @@ export const GameData = {
   apiBaseUrl: 'https://coscup.mirumo.cc/api',
   get apiToken() {
     const urlParams = new URLSearchParams(window.location.search)
-    // return urlParams.get('token')
-    return 'AHTr0mzVExM671dbHQP6fz0YvjwrVgYh40fw'
+    return urlParams.get('token')
   },
   get hexWidth() {
     return this.hexSize * 2
