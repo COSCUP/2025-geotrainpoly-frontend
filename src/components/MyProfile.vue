@@ -41,7 +41,6 @@ const availableTitles = computed(() => {
 })
 
 onMounted(async () => {
-  window.addEventListener('keydown', handleKeydown)
   document.addEventListener('click', closeDropdownOnClickOutside)
 
   const savedAvatar = localStorage.getItem('playerAvatar');
@@ -72,7 +71,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('keydown', handleKeydown)
   document.removeEventListener('click', closeDropdownOnClickOutside)
 })
 
@@ -100,16 +98,6 @@ const closeDropdownOnClickOutside = (event: MouseEvent) => {
   const titleEl = document.querySelector('.title-container')
   if (titleEl && !titleEl.contains(event.target as Node)) {
     showTitleDropdown.value = false
-  }
-}
-
-// 成就解鎖的測試鍵 
-// API 弄好要記得刪掉
-const handleKeydown = (event: KeyboardEvent) => {
-  const key = parseInt(event.key)
-  if (!isNaN(key)) {
-    const medal = player.value.achievements.find(m => m.id === key)
-    if (medal && !medal.unlocked) medal.unlocked = true
   }
 }
 
