@@ -59,10 +59,10 @@ onMounted(async () => {
       player.value.points = user.points
       player.value.title = user.title
 
-      const unlockedIds = user.achievements.map((a: any) => a.achievement_1d)
+      const unlockedNames = user.achievements.map((a: any) => a.name)
       player.value.achievements = allAchievements.map(m => ({
         ...m,
-        unlocked: unlockedIds.includes(m.id)
+        unlocked: unlockedNames.includes(m.name)
       }))
     }
   } catch (err) {
