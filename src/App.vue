@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed, provide } from 'vue';
 import { useRouter, useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import './style.css'
@@ -6,21 +7,25 @@ import './style.css'
 const router = useRouter()
 const route = useRoute()
 
+const token = computed(() => route.query.token)
+
 const goToBoothsList = () => {
-  router.push('/booths')
+  router.push({ path: '/booths', query: { token: token.value } })
 }
 
 const scanQRCode = () => {
-  router.push('/qrcode-scanner')
+  router.push({ path: '/qrcode-scanner', query: { token: token.value } })
 }
 
 const goToProfile = () => {
-  router.push('/profile')
+  router.push({ path: '/profile', query: { token: token.value } })
 }
 
 const goToGameScene = () => {
-  router.push('/')
+  router.push({ path: '/', query: { token: token.value } })
 }
+
+provide('token', token)
 </script>
 
 <template>
