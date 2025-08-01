@@ -64,7 +64,7 @@ provide('token', token)
   justify-content: space-around;
   align-items: center;
   background-color: #e0ecff;
-  z-index: 1000;
+  z-index: 100;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
 }
 

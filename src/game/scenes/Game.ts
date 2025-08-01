@@ -14,16 +14,16 @@ function randomData(scene: Phaser.Scene, x: number, y: number) {
     ID: ''
   }
 
-  const r = Math.random()
-  if (r < 0.25) {
-    ret.type = 'Booths'
-    const index = Math.min(Math.floor(Math.random() * GameData.boothIDs.length), GameData.boothIDs.length - 1)
-    ret.ID = GameData.boothIDs[index]
-  }
-  else {
+  // const r = Math.random()
+  // if (r < 0.25) {
+  //   ret.type = 'Booths'
+  //   const index = Math.min(Math.floor(Math.random() * GameData.boothIDs.length), GameData.boothIDs.length - 1)
+  //   ret.ID = GameData.boothIDs[index]
+  // }
+  // else {
     ret.type = 'Venue'
     ret.ID = 'TR212'
-  }
+  // }
   return ret
 }
 
@@ -38,13 +38,13 @@ export class Game extends Scene {
     this.boothIDs = boothIDs
   }
 
-  preload() {
-    this.boothIDs.forEach((key) => {
-      const url = `https://coscup.org/2024/images/sponsor/${key}.png`
-      this.load.image(key, url)
-    })
-    GameData.boothIDs = this.boothIDs
-  }
+  // preload() {
+  //   this.boothIDs.forEach((key) => {
+  //     const url = `https://coscup.org/2024/images/sponsor/${key}.png`
+  //     this.load.image(key, url)
+  //   })
+  //   GameData.boothIDs = this.boothIDs
+  // }
 
   create() {
     GameData.screenWidth = this.cameras.main.width
