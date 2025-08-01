@@ -6,13 +6,8 @@ export async function get_booths() {
     const res = await fetch(`${API_BASE_URL}/booths`)
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
     const data = await res.json()
-    const booths = data.reduce(
-        (acc: any, item: any) => {
-            acc[item.booth_id] = item
-            return acc
-        }, {}
-    )
-    return booths
+
+    return data
 }
 
 export async function get_booths_images() {
