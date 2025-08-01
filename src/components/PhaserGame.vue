@@ -271,14 +271,14 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
           src="/assets/banner-mobile.png"
         >
       </div>
-      <div v-else-if="popupData?.type === 'Booths'" class="Booths">
+      <!-- <div v-else-if="popupData?.type === 'Booths'" class="Booths">
         <h2>{{ boothsData[popupData?.ID].name['zh-TW'] }}</h2>
         <img
           :alt="boothsData[popupData?.ID].name['zh-TW']"
           :src="'https://coscup.org/' + boothsData[popupData?.ID].image"
         >
         <div class="booths-content" v-html="markedIntro(boothsData[popupData?.ID].intro['zh-TW'] )"></div>
-      </div>
+      </div> -->
       <div v-else-if="popupData?.type === 'Venue'" class="Venue">
         <h2>{{ popupData?.ID }}</h2>
         <div class="comment-list">
