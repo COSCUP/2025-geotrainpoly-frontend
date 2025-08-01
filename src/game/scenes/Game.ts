@@ -250,15 +250,16 @@ export class Game extends Scene {
     const tile = new HexTile(randomData(this, pos.x, pos.y))
     this.contentContainer.addAt(tile, 0)
     GameData.path.push(tile)
-    this.contentContainer.y = Math.max(GameData.screenHeight * 0.5 - lastTile.y, 0)
+    
     this.tweens.add({
       targets: this.contentContainer,
       y: Math.max(GameData.screenHeight * 0.5 - pos.y, 0),
-      duration: 1000,
+      duration: 600,
       ease: 'Sine.easeInOut',
+      onComplete: () => {
+        this.addCharacterImage(tile);
+      }
     })
-    
-    this.addCharacterImage(lastTile);
   }
 
   showAllTileInfo(show: boolean) {
