@@ -2,6 +2,7 @@ import { Scene } from 'phaser'
 import { HexTile } from '../../data/TileData'
 import { EventBus } from '../EventBus'
 import { GameData } from '../../data/GameData.ts'
+import { get_hextiles } from '../../api/get_hextiles.ts'
 
 function randomData(scene: Phaser.Scene, x: number, y: number) {
   const ret = {
@@ -31,22 +32,21 @@ export class Game extends Scene {
   private contentContainer!: Phaser.GameObjects.Container
   private dragStartY = 0
   private containerStartY = 0
-  private boothIDs: string[]
+  private boothImages: string[]
 
-  constructor(boothIDs: string[]) {
+  constructor(boothImages: string[]) {
     super('MainGame')
-    this.boothIDs = boothIDs
+    this.boothImages = boothImages
   }
 
-  // preload() {
-  //   this.boothIDs.forEach((key) => {
-  //     const url = `https://coscup.org/2024/images/sponsor/${key}.png`
-  //     this.load.image(key, url)
-  //   })
-  //   GameData.boothIDs = this.boothIDs
-  // }
+  preload() {
+    this.boothImages.forEach((url) => {
+      this.load.image('MySQL', url) // TODO: replase 'MySQL' with booth ID
+    })
+    GameData.boothIDs = this.boothImages
+  }
 
-  create() {
+  async create() {
     GameData.screenWidth = this.cameras.main.width
     GameData.screenHeight = this.cameras.main.height
     GameData.hexSize = GameData.screenWidth / 6
@@ -72,7 +72,7 @@ export class Game extends Scene {
           x: x,
           y: y,
           size: GameData.hexSize,
-          type: "Base",
+          type: "base",
           skew: GameData.skew
         })
         this.contentContainer.add(tile)
@@ -81,6 +81,26 @@ export class Game extends Scene {
           GameData.path.push(tile)
         }
       }
+    }
+
+    const path: any[] = await get_hextiles()
+    let x = GameData.path[0].centerX
+    let y = GameData.path[0].centerY
+    for (let idx = 0; idx < path.length; idx++) {
+      const pos = this.calNextPos(x, y, path[idx].x)
+      x = pos.x
+      y = pos.y
+      const tile = new HexTile({
+        scene: this,
+        x: x,
+        y: y,
+        size: GameData.hexSize,
+        skew: GameData.skew,
+        type: path[idx].type,
+        ID: path[idx].booth_id
+      })
+      this.contentContainer.addAt(tile, 0)
+      GameData.path.push(tile)
     }
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
@@ -108,12 +128,24 @@ export class Game extends Scene {
     EventBus.emit('current-scene-ready', this)
   }
 
+  calNextPos(curX: number, curY: number, dir: number) {
+    if (dir === -1) {
+      return {x: curX - GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+    }
+    else if (dir === 1) {
+      return {x: curX + GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+    }
+    else {
+      return {x: curX, y: curY - GameData.hexHeight}
+    }
+  }
+
   chooseNextPos(curX: number, curY: number) {
     let noLeft = false
     let noRight = false
 
     if (GameData.path.length === 1) {
-      return {x: curX, y: curY - GameData.hexHeight}
+      return this.calNextPos(curX, curY, 0)
     }
     else {
       const last_curX = GameData.path[GameData.path.length - 2].centerX
@@ -123,13 +155,13 @@ export class Game extends Scene {
 
     const r = Math.random()
     if (r < 0.35 && curX != GameData.tilePos[0] && !noLeft) {
-      return {x: curX - GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+      return this.calNextPos(curX, curY, -1)
     }
     else if (r < 0.7 && curX != GameData.tilePos[2] && !noRight) {
-      return {x: curX + GameData.hexWidth * 0.75, y: curY - GameData.hexHeight * 0.5}
+      return this.calNextPos(curX, curY, 1)
     }
     else {
-      return {x: curX, y: curY - GameData.hexHeight}
+      return this.calNextPos(curX, curY, 0)
     }
   }
 
