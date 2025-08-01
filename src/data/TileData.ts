@@ -69,6 +69,8 @@ export class HexTile extends Phaser.GameObjects.Container {
   private skew: number
   private hexGraphics: Phaser.GameObjects.Graphics
   private ID: string
+  private infoText?: Phaser.GameObjects.Text
+  private boothLogo?: Phaser.GameObjects.Image
   type: string
   centerX: number
   centerY: number
@@ -93,16 +95,6 @@ export class HexTile extends Phaser.GameObjects.Container {
 
     this.hexGraphics = this.createHex()
     this.add(this.hexGraphics)
-    // if (this.type === "booths") {
-    //   const boothLogo = this.scene.add.image(0, 0, ID)
-    //   const maxW = this.size * 1.5
-    //   const maxH = this.size * this.skew * 1.5
-    //   const scaleX = maxW / boothLogo.width
-    //   const scaleY = maxH / boothLogo.height
-    //   const scale = Math.min(scaleX, scaleY)
-    //   boothLogo.setScale(scale)
-    //   this.add(boothLogo)
-    // }
     this.setSize(size * 2, Math.sqrt(3) * size * skew)
     this.setDepth(this.y)
 
@@ -226,5 +218,38 @@ export class HexTile extends Phaser.GameObjects.Container {
       points.push(new Phaser.Math.Vector2(px, py))
     }
     return points
+  }
+
+  setInfoVisible(show: boolean) {
+    if (show) {
+      if (this.type === "booths") {
+        if (!this.boothLogo) {
+          this.boothLogo = this.scene.add.image(0, 0, 'mysql') // TODO: change mysql to this.ID
+          const maxW = this.size * 1.5
+          const maxH = this.size * this.skew * 1.5
+          const scaleX = maxW / this.boothLogo.width
+          const scaleY = maxH / this.boothLogo.height
+          const scale = Math.min(scaleX, scaleY)
+          this.boothLogo.setScale(scale)
+          this.add(this.boothLogo)
+        }
+        this.boothLogo.setVisible(true)
+      }
+      else if (this.type === "base" || this.type === "venue") {
+        if (!this.infoText) {
+          this.infoText = this.scene.add.text(0, 0, this.ID || 'start', {
+            fontSize: '24px', // 修改字體大小
+            fontFamily: 'Sour Gummy', // 修改字體
+            color: '#000', // 修改字體顏色
+          }).setOrigin(0.5)
+          this.add(this.infoText)
+        }
+        this.infoText.setVisible(true)
+      }
+    }
+    else {
+      this.infoText?.setVisible(false)
+      this.boothLogo?.setVisible(false)
+    }
   }
 }

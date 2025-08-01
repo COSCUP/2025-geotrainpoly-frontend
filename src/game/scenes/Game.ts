@@ -41,9 +41,10 @@ export class Game extends Scene {
 
   preload() {
     this.boothImages.forEach((url) => {
-      this.load.image('MySQL', url) // TODO: replase 'MySQL' with booth ID
+      this.load.image('mysql', url) // TODO: replase 'mysql' with booth ID
     })
-    GameData.boothIDs = this.boothImages
+    this.load.image('eye', '../../../public/assets/eye.png')
+    this.load.image('no-eye', '../../../public/assets/no-eye.png')
   }
 
   async create() {
@@ -125,6 +126,41 @@ export class Game extends Scene {
       this.addNextHexTile()
     })
 
+    const buttonSize = 60
+    const canvaSize = buttonSize + 20
+    const canvas = this.textures.createCanvas('eye-button', canvaSize, canvaSize)
+    const ctx = canvas!.getContext()
+
+    // set button background
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.arc(canvaSize / 2, canvaSize / 2, buttonSize / 2 - 5, 0, Math.PI * 2)
+    ctx.fill()
+
+    // add button shadow
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'
+    ctx.shadowBlur = 10
+    ctx.shadowOffsetX = 4
+    ctx.shadowOffsetY = 4
+    ctx.fill()
+
+    canvas!.refresh()
+
+    this.add.image(GameData.screenWidth - 40, 40, 'eye-button').setOrigin(0.5)
+
+    const infoBtn = this.add.image(GameData.screenWidth - 40, 40, 'no-eye').setOrigin(0.5).setScale(0.5).setInteractive()
+    infoBtn.setScrollFactor(0)
+
+    infoBtn.on('pointerdown', () => {
+      this.showAllTileInfo(true)
+      infoBtn.setTexture('eye')
+    })
+
+    infoBtn.on('pointerup', () => {
+      this.showAllTileInfo(false)
+      infoBtn.setTexture('no-eye')
+    })
+
     EventBus.emit('current-scene-ready', this)
   }
 
@@ -178,5 +214,11 @@ export class Game extends Scene {
       duration: 1000,
       ease: 'Sine.easeInOut',
     })
+  }
+
+  showAllTileInfo(show: boolean) {
+    for (const tile of GameData.path) {
+      tile.setInfoVisible(show)
+    }
   }
 }
