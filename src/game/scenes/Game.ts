@@ -32,25 +32,47 @@ export class Game extends Scene {
   private dragStartY = 0
   private containerStartY = 0
   private boothIDs: string[]
+  private playerCharacterImage: Phaser.GameObjects.Image | null = null;
 
   constructor(boothIDs: string[]) {
     super('MainGame')
     this.boothIDs = boothIDs
   }
 
-  // preload() {
+  preload() {
   //   this.boothIDs.forEach((key) => {
   //     const url = `https://coscup.org/2024/images/sponsor/${key}.png`
   //     this.load.image(key, url)
   //   })
   //   GameData.boothIDs = this.boothIDs
-  // }
+  const playerCharacterPath = localStorage.getItem('playerCharacter');
+    if (playerCharacterPath) {
+      this.load.image('playerCharacter', playerCharacterPath);
+    }
+  }
 
   create() {
+    this.initGameLayout()
+    this.createInitialTiles()
+    this.setupInputHandling()
+
+    EventBus.emit('current-scene-ready', this)
+
+    this.time.delayedCall(1000, () => {
+      if (GameData.path.length > 0) {
+        this.addCharacterImage(GameData.path[0])
+      }
+    });
+  }
+
+  private initGameLayout() {
     GameData.screenWidth = this.cameras.main.width
     GameData.screenHeight = this.cameras.main.height
     GameData.hexSize = GameData.screenWidth / 6
+    this.contentContainer = this.add.container(0, 0)
+  }
 
+  private createInitialTiles() {
     const spacingX = GameData.hexWidth * 1.5
     const spacingY = GameData.hexHeight * 0.5
     const cols = GameData.screenWidth / spacingX + 1
@@ -58,8 +80,6 @@ export class Game extends Scene {
     const center = Math.round(cols / 2) - 1
     const startY = GameData.screenHeight - spacingY * (rows + 1)
     const startX = 0
-
-    this.contentContainer = this.add.container(0, 0)
 
     for (let row = 0; row < rows; row++) {
       for (let col = 0; col < cols; col++) {
@@ -82,7 +102,9 @@ export class Game extends Scene {
         }
       }
     }
+  }
 
+  private setupInputHandling() {
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       this.dragStartY = pointer.y
       this.containerStartY = this.contentContainer.y
@@ -133,6 +155,25 @@ export class Game extends Scene {
     }
   }
 
+  private addCharacterImage(targetTile: HexTile) {
+    if (this.playerCharacterImage) {
+      this.playerCharacterImage.destroy();
+    }
+
+    const playerCharacterPath = localStorage.getItem('playerCharacter');
+    if (playerCharacterPath) {
+      const characterImage = this.add.image(
+        targetTile.centerX,
+        targetTile.centerY - GameData.hexHeight,
+        'playerCharacter'
+      );
+      const imageScale = (GameData.hexSize * 0.55 * 2) / characterImage.width;
+      characterImage.setScale(imageScale);
+      this.contentContainer.add(characterImage);
+      this.playerCharacterImage = characterImage;
+    }
+  }
+
   addNextHexTile() {
     const lastTile = GameData.path[GameData.path.length - 1]
     const pos = this.chooseNextPos(lastTile.centerX, lastTile.centerY)
@@ -146,5 +187,7 @@ export class Game extends Scene {
       duration: 1000,
       ease: 'Sine.easeInOut',
     })
+    
+    this.addCharacterImage(lastTile);
   }
 }

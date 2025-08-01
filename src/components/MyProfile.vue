@@ -14,12 +14,15 @@ type PlayerProfile = {
   achievements: Medal[]
 }
 
-// 頭像選項
-const avatarList = [
-  '/assets/人類小啄頭像1.png',
-  '/assets/人類小啄頭像2.png',
-  '/assets/人類小啄頭像3.png'
-]
+// 頭像與對應的人類小啄
+const avatarMap = {
+  '/assets/人類小啄頭像1.png': '/assets/人類小啄1.png',
+  '/assets/人類小啄頭像2.png': '/assets/人類小啄2.png',
+  '/assets/人類小啄頭像3.png': '/assets/人類小啄3.png'
+}
+
+// 頭像選項 (只保留頭像圖片，用於選單顯示)
+const avatarList = Object.keys(avatarMap)
 
 // 玩家資料
 const player = ref<PlayerProfile>({
@@ -116,6 +119,11 @@ const confirmAvatar = () => {
   if (selectedAvatar.value) {
     player.value.avatar = selectedAvatar.value
     localStorage.setItem('playerAvatar', selectedAvatar.value);
+
+    const characterPath = (avatarMap as Record<string, string>)[selectedAvatar.value];
+    if (characterPath) {
+      localStorage.setItem('playerCharacter', characterPath);
+    }
   }
   closeAvatarModal()
 }
