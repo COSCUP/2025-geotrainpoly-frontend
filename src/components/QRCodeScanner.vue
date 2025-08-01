@@ -4,6 +4,7 @@ import { Html5Qrcode } from 'html5-qrcode'
 import { Icon } from '@iconify/vue'
 import QrcodeVue from 'qrcode.vue'
 import { useRouter, useRoute } from 'vue-router'
+import { postCollect } from '../api/post_collect'
 
 const router = useRouter()
 const route = useRoute()
@@ -41,6 +42,14 @@ const startQrScanner = async (id: string) => {
       config,
       async (decodedText: string) => {
         console.log('QR Code 掃描成功:', decodedText)
+        try {
+          const boothId = decodedText
+          const xCoordinate = -1
+          const apiResponse = await postCollect(boothId, xCoordinate)
+          console.log('API 呼叫成功，回傳資料：', apiResponse)
+        } catch (error) {
+          console.log('呼叫 postCollect API 失敗:', error)
+        }
         await stopQrScanner()
         router.push({ path: '/' })
       },
