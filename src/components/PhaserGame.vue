@@ -7,8 +7,7 @@ import { GameData } from '../data/GameData.ts'
 import StartGame from '../game/main'
 import { Icon } from '@iconify/vue'
 import Danmaku from './Danmaku.vue'
-import { get_booths } from '../api/get_booths.ts'
-import { get_hextiles, get_hextiles_booth } from '../api/get_hextiles.ts'
+import { get_hextiles_booth } from '../api/get_hextiles.ts'
 import { post_msg } from '../api/post_msg.ts'
 import Tutorial from './Tutorial.vue'
 
@@ -324,6 +323,7 @@ img {
 
 .comment-user {
   font-weight: bold;
+  text-align: left;
 }
 
 .comment-message {

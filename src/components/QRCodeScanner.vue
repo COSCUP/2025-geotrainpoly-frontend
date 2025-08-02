@@ -73,7 +73,7 @@ const startQrScanner = async (id: string) => {
       }
     )
   } catch (error) {
-    console.error('啟動 QR 掃描器失敗：', error)
+    // console.error('啟動 QR 掃描器失敗：', error)
   }
 }
 

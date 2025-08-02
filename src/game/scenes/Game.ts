@@ -52,8 +52,6 @@ export class Game extends Scene {
     }
   }
 
- 
-
   create() {
     this.initGameLayout()
     this.createInitialTiles()
