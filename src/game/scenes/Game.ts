@@ -40,8 +40,8 @@ export class Game extends Scene {
   }
 
   preload() {
-    this.boothImages.forEach((url) => {
-      this.load.image('mysql', url) // TODO: replase 'mysql' with booth ID
+    Object.entries(this.boothImages).forEach(([boothID, url]) => {
+      this.load.image(boothID, url)
     })
     this.load.image('eye', '../../../public/assets/eye.png')
     this.load.image('no-eye', '../../../public/assets/no-eye.png')
@@ -73,7 +73,7 @@ export class Game extends Scene {
           x: x,
           y: y,
           size: GameData.hexSize,
-          type: "base",
+          type: "BASE",
           skew: GameData.skew
         })
         this.contentContainer.add(tile)
@@ -98,7 +98,7 @@ export class Game extends Scene {
         size: GameData.hexSize,
         skew: GameData.skew,
         type: path[idx].type,
-        ID: path[idx].booth_id
+        ID: path[idx].name
       })
       this.contentContainer.addAt(tile, 0)
       GameData.path.push(tile)

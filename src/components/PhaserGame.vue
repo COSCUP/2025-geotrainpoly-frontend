@@ -8,14 +8,16 @@ import StartGame from '../game/main'
 import { Icon } from '@iconify/vue'
 import Danmaku from './Danmaku.vue'
 import { get_booths } from '../api/get_booths.ts'
+import { get_hextiles, get_hextiles_booth } from '../api/get_hextiles.ts'
+import { post_msg } from '../api/post_msg.ts'
+import Tutorial from './Tutorial.vue'
 
 const emit = defineEmits(['current-active-scene'])
 // Save the current scene instance
 const scene = ref()
 const game = ref()
 const showPopup = ref(false)
-const popupData = ref<{ type: string, ID: string } | null>(null)
-const boothsData = ref()
+const popupData = ref()
 const comments = ref()
 const newMessage = ref('')
 const renderer = new marked.Renderer()
@@ -27,17 +29,19 @@ marked.setOptions({ renderer })
 onMounted(async () => {
   game.value = await StartGame('game-container')
 
-  boothsData.value = await get_booths()
-
   EventBus.on('current-scene-ready', (sceneInstance: Phaser.Scene) => {
     emit('current-active-scene', sceneInstance)
 
     scene.value = sceneInstance
   })
 
-  EventBus.on('tile-clicked', (data:{ type: string, ID: string }) => {
+  EventBus.on('tile-clicked', async (data:{ type: string, ID: string }) => {
+    if (data.type === 'BASE') {
+      popupData.value = { booth: { type: 'BASE' } }
+    } else {
+      popupData.value = await get_hextiles_booth(data.ID)
+    }
     showPopup.value = true
-    popupData.value = data
   })
 })
 
@@ -56,21 +60,33 @@ function closePopup() {
   comments.value = []
 }
 
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hourCycle: 'h23'})
+function formatTime(iso: string, timeZone: string = 'Asia/Taipei') {
+  const date = new Date(iso + 'Z')
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone,
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  })
+  return formatter.format(date)
 }
 
-function addComment() {
-  comments.value.push({
-    id: comments.value.length + 1,
-    user: 'TC',
-    title: '新手小啄',
-    message: newMessage.value,
-    timestamp: new Date().toISOString(),
-    isLiked: false,
-    likes: 0
-  })
-  newMessage.value = ''
+async function addComment(booth_name: string, booth_id: string) {
+  try {
+    await post_msg(booth_id, newMessage.value)
+    newMessage.value = ''
+
+    const data = await get_hextiles_booth(booth_name)
+    if (data && data.msg) {
+      comments.value = data.msg
+    } else {
+      console.warn('No messages found in response:', data)
+    }
+  } catch (error) {
+    console.error('Error posting message or fetching comments:', error)
+  }
 }
 
 function markedIntro(intro: string) {
@@ -78,12 +94,15 @@ function markedIntro(intro: string) {
   return res.value
 }
 
-const topComments = computed(() =>
-  comments.value
+const topComments = computed(() => {
+  if (!Array.isArray(comments.value)) {
+    return []
+  }
+  return comments.value
     .slice()
     .sort((a: any, b: any) => b.likes - a.likes)
-    .slice(0, 3)
-)
+    .slice(0, Math.min(comments.value.length, 3))
+})
 
 const isButtonDisabled = computed(() => {
   return newMessage.value.trim() === ''
@@ -106,177 +125,47 @@ function toggleLike(id: number) {
 }
 
 watch([showPopup, popupData], async ([isOpen, data]) => {
-  if (isOpen && data?.type === 'venue') {
-    comments.value = [
-      {
-        "id": 1,
-        "user": "Alice",
-        "title": "新手小啄",
-        "message": "這個場地超棒，氣氛很好！",
-        "timestamp": "2025-06-27T10:24:00+08:00",
-        "isLiked": false,
-        "likes": 1200
-      },
-      {
-        "id": 2,
-        "user": "Bob",
-        "title": "意見領袖",
-        "message": "昨天參加的活動非常精彩，謝謝主辦單位。",
-        "timestamp": "2025-06-27T11:12:34+08:00",
-        "isLiked": true,
-        "likes": 900
-      },
-      {
-        "id": 3,
-        "user": "Cindy",
-        "title": "有點小可愛",
-        "message": "請問這裡有提供素食餐點嗎？",
-        "timestamp": "2025-06-27T11:45:10+08:00",
-        "isLiked": false,
-        "likes": 1500
-      },
-      {
-        "id": 4,
-        "user": "Daniel",
-        "title": "人氣新星",
-        "message": "希望下次活動可以有更多互動環節。",
-        "timestamp": "2025-06-27T12:01:50+08:00",
-        "isLiked": false,
-        "likes": 600
-      },
-      {
-        "id": 5,
-        "user": "Emily",
-        "title": "魅力無法擋",
-        "message": "場地有點小，不過整體很溫馨！",
-        "timestamp": "2025-06-27T12:35:22+08:00",
-        "isLiked": false,
-        "likes": 2509
-      },
-      {
-        "id": 6,
-        "user": "Frank",
-        "title": "愛心發電機",
-        "message": "活動真的很用心，期待下次再參加！",
-        "timestamp": "2025-06-27T13:05:00+08:00",
-        "isLiked": true,
-        "likes": 2
-      },
-      {
-        "id": 7,
-        "user": "Grace",
-        "title": "新手小啄",
-        "message": "現場氣氛很好，主持人也超有趣。",
-        "timestamp": "2025-06-27T13:12:35+08:00",
-        "isLiked": false,
-        "likes": 6
-      },
-      {
-        "id": 8,
-        "user": "Henry",
-        "title": "意見領袖",
-        "message": "覺得空間稍微擁擠，但整體體驗不錯。",
-        "timestamp": "2025-06-27T13:23:19+08:00",
-        "isLiked": false,
-        "likes": 4
-      },
-      {
-        "id": 9,
-        "user": "Irene",
-        "title": "有點小可愛",
-        "message": "可以考慮加入音樂表演會更棒！",
-        "timestamp": "2025-06-27T13:41:02+08:00",
-        "isLiked": false,
-        "likes": 27
-      },
-      {
-        "id": 10,
-        "user": "Jack",
-        "title": "人氣新星",
-        "message": "我最喜歡DIY區域，小朋友玩得很開心。",
-        "timestamp": "2025-06-27T14:00:00+08:00",
-        "isLiked": false,
-        "likes": 36
-      },
-      {
-        "id": 11,
-        "user": "Kelly",
-        "title": "魅力無法擋",
-        "message": "希望之後有更多互動攤位～",
-        "timestamp": "2025-06-27T14:05:43+08:00",
-        "isLiked": false,
-        "likes": 54
-      },
-      {
-        "id": 12,
-        "user": "Leo",
-        "title": "愛心發電機",
-        "message": "美食區真的很豐富！吃得超滿足！",
-        "timestamp": "2025-06-27T14:21:10+08:00",
-        "isLiked": false,
-        "likes": 24
-      },
-      {
-        "id": 13,
-        "user": "Mia",
-        "title": "真心不騙",
-        "message": "第一次來這個場地，感覺超棒！",
-        "timestamp": "2025-06-27T14:35:47+08:00",
-        "isLiked": false,
-        "likes": 123
-      },
-      {
-        "id": 14,
-        "user": "Nate",
-        "title": "新手小啄",
-        "message": "排隊動線可以再優化一下。",
-        "timestamp": "2025-06-27T14:50:00+08:00",
-        "isLiked": false,
-        "likes": 5
-      },
-      {
-        "id": 15,
-        "user": "Olivia",
-        "title": "愛心發電機",
-        "message": "主題佈置好漂亮，拍了很多照片！",
-        "timestamp": "2025-06-27T15:00:12+08:00",
-        "isLiked": true,
-        "likes": 100
-      }
-    ]
+  if (isOpen && data.booth.type === 'ROOMS') {
+    const booth_data = await get_hextiles_booth(data.booth.name)
+    if (booth_data && booth_data.msg) {
+      comments.value = data.msg
+    } else {
+      console.warn('No messages found in response:', data)
+    }
   }
 })
 </script>
 
 <template>
+  <Tutorial v-if="scene" :scene="scene"/>
   <div id="game-container" :style="{ bottom: `${GameData.bottomBarHeight}px` }" />
   <div class="popup-overlay" id="popup" v-if="showPopup">
     <div class="popup-content">
       <button class="popup-close" id="popupClose" @click="closePopup()">x</button>
-      <div v-if="popupData?.type === 'base'">
+      <div v-if="popupData.booth.type === 'BASE'">
         <img
           alt="COSCUP x RubyConf Taiwan 2025 banner"
           src="/assets/banner-mobile.png"
         >
       </div>
-      <div v-else-if="popupData?.type === 'booths'" class="Booths">
-        <h2>{{ boothsData['1'].name }}</h2> <!-- TODO: replace '1' with ID-->
+      <div v-else-if="popupData.booth.type === 'BOOTHS'" class="Booths">
+        <h2>{{ popupData.booth.name }}</h2>
         <img
-          :alt="boothsData['1'].name" 
-          :src="boothsData['1'].logo"
-        > <!-- TODO: replace '1' with ID-->
-        <div class="booths-content" v-html="markedIntro(boothsData['1'].description )"></div> <!-- TODO: replace '1' with ID-->
+          :alt="popupData.booth.name" 
+          :src="popupData.booth.logo"
+        >
+        <div class="booths-content" v-html="markedIntro(popupData.booth.description)"></div>
       </div>
-      <div v-else-if="popupData?.type === 'venue'" class="Venue">
-        <h2>{{ popupData?.ID }}</h2>
+      <div v-else-if="popupData.booth.type === 'ROOMS'" class="Venue">
+        <h2>{{ popupData.booth.name }}</h2>
         <div class="comment-list">
           <div v-for="comment in comments" :key="comment.id" class="comment-item">
             <div class="comment-content">
               <div class="comment-header">
-                <span class="comment-user">{{ comment.user + "．" + comment.title }}</span>
-                <span class="comment-time">{{ formatTime(comment.timestamp) }}</span>
+                <span class="comment-user">{{ comment.user.name + "．" + comment.user.title }}</span>
+                <span class="comment-time">{{ formatTime(comment.created_at) }}</span>
               </div>
-              <p class="comment-message">{{ comment.message }}</p>
+              <p class="comment-message">{{ comment.content }}</p>
             </div>
             <div class="comment-likes">
               <Icon v-if="comment.isLiked" icon="mdi:heart" width="24" height="24"  style="color: #f00" @click="toggleLike(comment.id)" :class="{ 'like-icon': true, 'animate': comment.animate }" />
@@ -286,13 +175,13 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
           </div>
         </div>
         <div class="comment-form">
-          <textarea v-model="newMessage" rows="3" placeholder="寫下你的留言...（上限 30 個字）" maxlength="30"></textarea>
-          <button @click="addComment" :disabled="isButtonDisabled">送出留言</button>
+          <textarea v-model="newMessage" rows="3" placeholder="寫下你的留言...（上限 200 個字）" maxlength="200"></textarea>
+          <button @click="addComment(popupData.booth.name, popupData.booth.booth_id)" :disabled="isButtonDisabled">送出留言</button>
         </div>
       </div>
     </div>
   </div>
-  <Danmaku :comments="topComments" v-if="popupData?.type === 'venue'"/>
+  <Danmaku :comments="topComments" v-if="showPopup && popupData.booth.type === 'ROOMS'"/>
 </template>
 
 <style scoped>
@@ -319,6 +208,7 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
 }
 
 .popup-content {
+  width: 80%;
   position: relative;
   background-color: white;
   color: black;
