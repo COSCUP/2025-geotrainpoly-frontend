@@ -61,7 +61,8 @@ export class Game extends Scene {
 
     this.time.delayedCall(1000, () => {
       if (GameData.path.length > 0) {
-        this.addCharacterImage(GameData.path[0])
+        const lastTile = GameData.path[GameData.path.length - 1]
+        this.addCharacterImage(lastTile)
       }
     });
   }
