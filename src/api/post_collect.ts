@@ -25,13 +25,24 @@ export async function postCollect(boothId: string, xCoordinate: number) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      let errorBody = {};
+      try {
+        errorBody = await response.json();
+      } catch (e) {
+        errorBody = { message: await response.text() };
+      }
+      const error = new Error(`HTTP error! Status: ${response.status}`);
+      (error as any).body = errorBody;
+      throw error;
     }
-
+    
     const data = await response.json();
     return data;
   } catch (error) {
     console.error('Failed to post collect data:', error);
+    if ((error as any).body) {
+      console.error('Error body:', (error as any).body);
+    }
     throw error;
   }
 }

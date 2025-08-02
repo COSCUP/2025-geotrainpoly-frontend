@@ -43,6 +43,10 @@ onMounted(async () => {
     }
     showPopup.value = true
   })
+
+  EventBus.on('add-new-hextile', () => {
+    scene.value.addNextHexTile();
+  });
 })
 
 onUnmounted(() => {

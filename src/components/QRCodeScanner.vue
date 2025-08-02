@@ -1,13 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { Html5Qrcode } from 'html5-qrcode'
 import { Icon } from '@iconify/vue'
 import QrcodeVue from 'qrcode.vue'
 import { useRouter, useRoute } from 'vue-router'
 import { postCollect } from '../api/post_collect'
+import { EventBus } from '../game/EventBus';
 
 const router = useRouter()
 const route = useRoute()
+
+const token = computed(() => route.query.token)
 
 const qrcodeRegionId = 'html5qr-code-full-region'
 const emit = defineEmits(['showMyQrCode'])
@@ -33,6 +36,12 @@ const config = {
 const showMyQrCode = ref(false)
 const userToken = ref('')
 
+const getRandomXCoordinate = () => {
+  const coordinates = [-1, 0, 1]
+  const randomIndex = Math.floor(Math.random() * coordinates.length)
+  return coordinates[randomIndex]
+}
+
 const startQrScanner = async (id: string) => {
   await stopQrScanner()
   qrScanner.value = new Html5Qrcode(qrcodeRegionId)
@@ -41,17 +50,23 @@ const startQrScanner = async (id: string) => {
       config.videoConstraints,
       config,
       async (decodedText: string) => {
+        await stopQrScanner()
         console.log('QR Code 掃描成功:', decodedText)
         try {
           const boothId = decodedText
-          const xCoordinate = -1
+          const xCoordinate = getRandomXCoordinate()
+          console.log('xCoordinate:', xCoordinate)
           const apiResponse = await postCollect(boothId, xCoordinate)
           console.log('API 呼叫成功，回傳資料：', apiResponse)
+          alert('板塊收集成功！');
+          EventBus.emit('add-new-hextile'); 
         } catch (error) {
-          console.log('呼叫 postCollect API 失敗:', error)
+          const errorBody = (error as any).body;
+          if (errorBody && errorBody.detail === 'Point already collected') {
+            alert('你已經收集過這個板塊了！');
+          }
         }
-        await stopQrScanner()
-        router.push({ path: '/' })
+       router.push({ path: '/', query: { token: token.value } })
       },
       (errorMessage: string) => {
         
