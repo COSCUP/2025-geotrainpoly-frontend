@@ -43,8 +43,8 @@ onMounted(async () => {
     showPopup.value = true
   })
 
-  EventBus.on('add-new-hextile', () => {
-    scene.value.addNextHexTile();
+   EventBus.on('add-new-hextile', (boothId: string) => {
+    scene.value.addNextHexTile(boothId);
   });
 })
 

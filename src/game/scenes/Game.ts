@@ -3,6 +3,7 @@ import { HexTile } from '../../data/TileData'
 import { EventBus } from '../EventBus'
 import { GameData } from '../../data/GameData.ts'
 import { get_hextiles } from '../../api/get_hextiles.ts'
+import { postCollect } from '../../api/post_collect.ts'
 
 function randomData(scene: Phaser.Scene, x: number, y: number) {
   const ret = {
@@ -143,12 +144,6 @@ export class Game extends Scene {
       }
     })
 
-    // This is for testing
-    this.input.keyboard?.on('keydown-SPACE', () => {
-      if (GameData.popupOpen) return
-      this.addNextHexTile()
-    })
-
     const buttonSize = 60
     const canvaSize = buttonSize + 20
     const canvas = this.textures.createCanvas('eye-button', canvaSize, canvaSize)
@@ -243,22 +238,45 @@ export class Game extends Scene {
     }
   }
 
-  addNextHexTile() {
+  async addNextHexTile(boothId: string) {
     const lastTile = GameData.path[GameData.path.length - 1]
     const pos = this.chooseNextPos(lastTile.centerX, lastTile.centerY)
-    const tile = new HexTile(randomData(this, pos.x, pos.y))
-    this.contentContainer.addAt(tile, 0)
-    GameData.path.push(tile)
     
-    this.tweens.add({
-      targets: this.contentContainer,
-      y: Math.max(GameData.screenHeight * 0.5 - pos.y, 0),
-      duration: 600,
-      ease: 'Sine.easeInOut',
-      onComplete: () => {
-        this.addCharacterImage(tile);
+    let xCoordinate = 0
+    if (pos.x < lastTile.centerX) {
+      xCoordinate = -1
+    } else if (pos.x > lastTile.centerX) {
+      xCoordinate = 1
+    } else {
+      xCoordinate = 0
+    }
+    
+    try {
+      console.log("boothId: ", boothId)
+      console.log("xCoordinate: ", xCoordinate)
+      const apiResponse = await postCollect(boothId, xCoordinate)
+      console.log('API 呼叫成功，回傳資料：', apiResponse)
+      alert('板塊收集成功！')
+
+      const tile = new HexTile(randomData(this, pos.x, pos.y))
+      this.contentContainer.addAt(tile, 0)
+      GameData.path.push(tile)
+      
+      this.tweens.add({
+        targets: this.contentContainer,
+        y: Math.max(GameData.screenHeight * 0.5 - pos.y, 0),
+        duration: 600,
+        ease: 'Sine.easeInOut',
+        onComplete: () => {
+          this.addCharacterImage(tile)
+        }
+      })
+    } catch (error) {
+      const errorBody = (error as any).body
+      if (errorBody && errorBody.detail === 'Point already collected') {
+        alert('你已經收集過這個板塊了！')
       }
-    })
+    }
   }
 
   showAllTileInfo(show: boolean) {
