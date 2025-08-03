@@ -45,8 +45,8 @@ export class Game extends Scene {
     Object.entries(this.boothImages).forEach(([boothID, url]) => {
       this.load.image(boothID, url)
     })
-    this.load.image('eye', '../../../public/assets/eye.png')
-    this.load.image('no-eye', '../../../public/assets/no-eye.png')
+    this.load.image('eye', '/assets/eye.png')
+    this.load.image('no-eye', '/assets/no-eye.png')
     let playerCharacterPath = localStorage.getItem('playerCharacter');
     
     if (!playerCharacterPath) {
