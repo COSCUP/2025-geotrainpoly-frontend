@@ -89,7 +89,6 @@ onMounted(async () => {
   const tokenFromUrl = urlParams.get('token')
   if (tokenFromUrl) {
     userToken.value = tokenFromUrl
-    console.log(userToken.value)
   }
 
   const devices = await Html5Qrcode.getCameras()
