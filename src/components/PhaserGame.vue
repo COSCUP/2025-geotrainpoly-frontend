@@ -28,6 +28,8 @@ marked.setOptions({ renderer })
 onMounted(async () => {
   game.value = await StartGame('game-container')
 
+  EventBus.removeAllListeners()
+
   EventBus.on('current-scene-ready', (sceneInstance: Phaser.Scene) => {
     emit('current-active-scene', sceneInstance)
 
