@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { QrcodeStream } from 'vue-qrcode-reader'
 import QrcodeVue from 'qrcode.vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { computed, ref } from 'vue'
 import { Icon } from '@iconify/vue'
 import { EventBus } from '../game/EventBus'
 
 const route = useRoute()
+const router = useRouter() 
 const token = computed(() => route.query.token)
 const showMyQrCode = ref(false)
 
 const onDetect = (decodedText: string) => {
-  const token = decodedText[0].rawValue
-  console.log(token)
-  EventBus.emit('add-new-hextile', token)
+  const boothToken = decodedText[0].rawValue
+  EventBus.emit('add-new-hextile', boothToken)
+  router.push({ path: '/', query: { token: token.value } })
 }
 </script>
 
