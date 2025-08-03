@@ -28,7 +28,7 @@ function nextPage() {
 
 <template>
   <div v-if="show" class="tutorial-overlay" @click="nextPage">
-    <img :src="`../../public/assets/tutorial-${page + 1}.png`" class="tutorial-image" />
+    <img :src="`/assets/tutorial-${page + 1}.png`" class="tutorial-image" />
     <div class="tutorial-progress">點擊繼續（{{ page + 1 }}/{{ total }}）</div>
   </div>
 </template>
