@@ -30,11 +30,11 @@
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
-    "html5-qrcode": "^2.3.8",
     "marked": "^16.0.0",
     "phaser": "^3.90.0",
     "qrcode.vue": "^3.6.0",
     "vue": "3.5.13",
+    "vue-qrcode-reader": "^5.7.3",
     "vue-router": "4"
   },
   "devDependencies": {

@@ -1,164 +1,42 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
-import { Html5Qrcode } from 'html5-qrcode'
-import { Icon } from '@iconify/vue'
+import { QrcodeStream } from 'vue-qrcode-reader'
 import QrcodeVue from 'qrcode.vue'
-import { useRouter, useRoute } from 'vue-router'
-import { EventBus } from '../game/EventBus';
+import { useRoute } from 'vue-router'
+import { computed, ref } from 'vue'
+import { Icon } from '@iconify/vue'
+import { EventBus } from '../game/EventBus'
 
-const router = useRouter()
 const route = useRoute()
-
 const token = computed(() => route.query.token)
-
-const qrcodeRegionId = 'html5qr-code-full-region'
-const emit = defineEmits(['showMyQrCode'])
-const cameraId = ref<string | null>(null)
-const qrScanner = ref<Html5Qrcode | null>(null)
-
-const config = {
-  fps: 10,
-  qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-    const minDimension = Math.min(viewfinderWidth, viewfinderHeight)
-    const qrboxSize = Math.floor(minDimension * 0.7)
-    return { width: qrboxSize, height: qrboxSize }
-  },
-  aspectRatio: 1,
-  videoConstraints: {
-    facingMode: 'environment',
-    width: { ideal: 1920 },
-    height: { ideal: 1080 },
-    aspectRatio: { min: 1, max: 2 },
-  },
-}
-
 const showMyQrCode = ref(false)
-const userToken = ref('')
 
-const startQrScanner = async (id: string) => {
-  await stopQrScanner()
-  qrScanner.value = new Html5Qrcode(qrcodeRegionId)
-  try {
-    await qrScanner.value.start(
-      config.videoConstraints,
-      config,
-      async (decodedText: string) => {
-        await stopQrScanner()
-        console.log('QR Code 掃描成功:', decodedText)
-        try {
-          const boothId = decodedText
-          EventBus.emit('add-new-hextile', boothId)
-        } catch (error) {
-          console.error('QR Code 處理失敗：', error)
-        }
-       router.push({ path: '/', query: { token: token.value } })
-      },
-      (errorMessage: string) => {
-        
-      }
-    )
-  } catch (error) {
-    // console.error('啟動 QR 掃描器失敗：', error)
-  }
-}
-
-const stopQrScanner = async () => {
-  if (qrScanner.value && qrScanner.value.isScanning) {
-    try {
-      console.log('停止 QR 掃描器中...')
-      await qrScanner.value.stop()
-
-      const videoElement = document
-        .getElementById(qrcodeRegionId)
-        ?.querySelector('video')
-
-      if (videoElement && videoElement.srcObject instanceof MediaStream) {
-        videoElement.srcObject.getTracks().forEach((track) => track.stop())
-        videoElement.srcObject = null
-        console.log('MediaStream 已完全清除')
-      }
-    } catch (error) {
-      console.error('停止 QR 掃描器失敗：', error)
-    }
-  }
-  qrScanner.value = null
-}
-
-onMounted(async () => {
-  const urlParams = new URLSearchParams(window.location.search)
-  const tokenFromUrl = urlParams.get('token')
-  if (tokenFromUrl) {
-    userToken.value = tokenFromUrl
-    console.log(userToken.value)
-  }
-
-  const devices = await Html5Qrcode.getCameras()
-  if (devices.length > 0) {
-    cameraId.value = devices[0].id
-  }
-
-  if (route.path === '/qrcode-scanner' && cameraId.value && !showMyQrCode.value) {
-    await startQrScanner(cameraId.value)
-  }
-})
-
-watch(
-  () => route.path,
-  async (newPath) => {
-    if (newPath === '/qrcode-scanner') {
-      if (cameraId.value && !showMyQrCode.value) {
-        await startQrScanner(cameraId.value)
-      }
-    } else {
-      await stopQrScanner()
-    }
-  }
-)
-
-onUnmounted(async () => {
-  await stopQrScanner()
-})
-
-const handleShowMyQrCode = async () => {
-  await stopQrScanner()
-  showMyQrCode.value = true
-}
-
-const closeMyQrCode = async () => {
-  showMyQrCode.value = false
-  if (route.path === '/qrcode-scanner' && cameraId.value) {
-    await startQrScanner(cameraId.value)
-  }
+const onDetect = (decodedText: string) => {
+  const token = decodedText[0].rawValue
+  console.log(token)
+  EventBus.emit('add-new-hextile', token)
 }
 </script>
 
 <template>
   <div class="qr-scanner-container">
-    <div
-      v-show="!showMyQrCode"
-      :id="qrcodeRegionId"
-      class="full-screen-scanner"
-    >
-      <div v-show="!cameraId" class="loading-message">
-        相機初始化中或權限未開啟...
-      </div>
+    <div v-if="!showMyQrCode" class="qr-code-scanner">
+      <qrcode-stream @detect="onDetect"></qrcode-stream>
     </div>
-
-    <div v-if="showMyQrCode" class="my-qrcode-display" @click="closeMyQrCode">
-      <div class="qrcode-wrapper">
-        <QrcodeVue :value="userToken" :size="250" level="H" class="generated-qrcode" />
+    <div v-show="showMyQrCode" class="my-qr-code-container" @click.stop="showMyQrCode = false">
+      <div class="my-qr-code">
+        <qrcode-vue :value="token" :size="250" />
       </div>
       <p class="qrcode-instruction">點擊任意處回到掃描畫面</p>
     </div>
-
-    <button v-show="!showMyQrCode" class="show-my-qr-button" @click="handleShowMyQrCode">
-       <Icon icon="tabler:qrcode" class="qr-code-icon" />
+    <button class="show-my-qr-button" @click="showMyQrCode = !showMyQrCode">
+      <Icon icon="tabler:qrcode" class="qr-code-icon"></Icon>
       <span>顯示行動條碼</span>
     </button>
   </div>
 </template>
 
 <style scoped>
+
 .qr-scanner-container {
   position: fixed;
   top: 0;
@@ -167,48 +45,35 @@ const closeMyQrCode = async () => {
   bottom: 70px;
   z-index: 100;
   overflow: hidden;
-  background-color: black;
+  background-color: #111;
 }
 
-.full-screen-scanner {
+.qr-scanner-container:after {
+  position: absolute;
+  content: '';
+  display: black;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  margin: auto;
+  width: 90vw;
+  aspect-ratio: 1 / 1;
+  z-index: 100;
+
+  border: 10px solid #f30000;
+}
+
+.qr-code-scanner {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  position: relative;
+  z-index: 100;
 }
 
-.full-screen-scanner :deep(video) { 
-  width: 100% !important;  
-  height: 100% !important; 
-  object-fit: cover !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 0 !important;
-}
-
-.full-screen-scanner :deep(canvas),
-.full-screen-scanner :deep(div[data-html5-qrcode-id]) {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 1 !important;
-}
-
-.loading-message {
-  color: white;
-  text-align: center;
-  padding: 20px;
-  font-size: 1.2em;
-  position: absolute; 
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-}
-
-.my-qrcode-display {
+.my-qr-code-container {
   position: absolute;
   top: 0;
   left: 0;
@@ -224,23 +89,10 @@ const closeMyQrCode = async () => {
   text-align: center;
 }
 
-.qrcode-wrapper {
-  background-color: white;
-  padding: 15px;
+.my-qr-code {
+  padding: 20px;
+  background: #fff;
   border-radius: 10px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.generated-qrcode {
-  display: block;
-}
-
-.qrcode-instruction {
-  margin-top: 10px;
-  font-size: 0.9em;
-  color: #ccc;
 }
 
 .show-my-qr-button {
