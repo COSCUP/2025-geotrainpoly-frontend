@@ -150,6 +150,12 @@ export class Game extends Scene {
       }
     })
 
+    if (GameData.path.length > 8) {
+        const lastTile = GameData.path[GameData.path.length - 1];
+        const targetY = GameData.screenHeight * 0.5 - lastTile.centerY;
+        this.contentContainer.y = targetY;
+    }
+
     const buttonSize = 60
     const canvaSize = buttonSize + 20
     const canvas = this.textures.createCanvas('eye-button', canvaSize, canvaSize)
