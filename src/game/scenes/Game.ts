@@ -47,7 +47,13 @@ export class Game extends Scene {
     })
     this.load.image('eye', '../../../public/assets/eye.png')
     this.load.image('no-eye', '../../../public/assets/no-eye.png')
-    const playerCharacterPath = localStorage.getItem('playerCharacter');
+    let playerCharacterPath = localStorage.getItem('playerCharacter');
+    
+    if (!playerCharacterPath) {
+      playerCharacterPath = '/assets/人類小啄1.png';
+      localStorage.setItem('playerCharacter', playerCharacterPath);
+    }
+    
     if (playerCharacterPath) {
       this.load.image('playerCharacter', playerCharacterPath);
     }

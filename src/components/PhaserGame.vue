@@ -162,7 +162,7 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
       <div v-else-if="popupData.booth.type === 'ROOMS'" class="Venue">
         <h2>{{ popupData.booth.name }}</h2>
         <div class="comment-list">
-          <div v-for="comment in comments" :key="comment.id" class="comment-item">
+          <div v-for="comment in comments" :key="comment.msg_id" class="comment-item">
             <div class="comment-content">
               <div class="comment-header">
                 <span class="comment-user">{{ comment.user.name + "．" + comment.user.title }}</span>

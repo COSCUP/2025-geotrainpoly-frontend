@@ -98,13 +98,34 @@ export class HexTile extends Phaser.GameObjects.Container {
     this.setSize(size * 2, Math.sqrt(3) * size * skew)
     this.setDepth(this.y)
 
-    scene.tweens.add({
+    this.scene.tweens.add({
       targets: this,
       y: y,
       ease: 'Bounce',
       duration: 1000,
       delay: Phaser.Math.Between(0, 300),
     })
+
+    if (this.type === "BOOTHS") {
+      this.boothLogo = this.scene.add.image(0, 0, this.ID)
+      const maxW = this.size * 1.5
+      const maxH = this.size * this.skew * 1.5
+      const scaleX = maxW / this.boothLogo.width
+      const scaleY = maxH / this.boothLogo.height
+      const scale = Math.min(scaleX, scaleY)
+      this.boothLogo.setScale(scale)
+      this.add(this.boothLogo)
+      this.boothLogo.setVisible(false)
+    }
+    else if (this.type === "ROOMS") {
+      this.infoText = this.scene.add.text(0, 0, this.ID, {
+        fontSize: '24px',
+        fontFamily: 'Sour Gummy',
+        color: '#000',
+      }).setOrigin(0.5)
+      this.add(this.infoText)
+      this.infoText.setVisible(false)
+    }
 
     this.setInteractive()
 
@@ -223,28 +244,10 @@ export class HexTile extends Phaser.GameObjects.Container {
   setInfoVisible(show: boolean) {
     if (show) {
       if (this.type === "BOOTHS") {
-        if (!this.boothLogo) {
-          this.boothLogo = this.scene.add.image(0, 0, this.ID)
-          const maxW = this.size * 1.5
-          const maxH = this.size * this.skew * 1.5
-          const scaleX = maxW / this.boothLogo.width
-          const scaleY = maxH / this.boothLogo.height
-          const scale = Math.min(scaleX, scaleY)
-          this.boothLogo.setScale(scale)
-          this.add(this.boothLogo)
-        }
-        this.boothLogo.setVisible(true)
+        this.boothLogo?.setVisible(true)
       }
       else if (this.type === "BASE" || this.type === "ROOMS") {
-        if (!this.infoText) {
-          this.infoText = this.scene.add.text(0, 0, this.ID || 'start', {
-            fontSize: '24px',
-            fontFamily: 'Sour Gummy',
-            color: '#000',
-          }).setOrigin(0.5)
-          this.add(this.infoText)
-        }
-        this.infoText.setVisible(true)
+        this.infoText?.setVisible(true)
       }
     }
     else {
