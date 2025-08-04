@@ -308,7 +308,7 @@ const closeAvatarModal = () => {
 
 .display-nickname {
   font-size: 20px;
-  font-family: 'Zen Maru Gothic', sans-serif;
+  font-family:'M PLUS Rounded 1c',sans-serif;
   font-weight: bold;
   color: #333;
 }
