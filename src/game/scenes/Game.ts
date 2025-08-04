@@ -267,6 +267,10 @@ export class Game extends Scene {
     } else {
       xCoordinate = 0
     }
+
+    if (GameData.path.length === 1) { 
+      xCoordinate = 0
+    }
     
     try {
       console.log("boothId: ", boothId)
