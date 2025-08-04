@@ -15,17 +15,6 @@ function randomData(scene: Phaser.Scene, x: number, y: number) {
     type: '',
     ID: ''
   }
-
-  // const r = Math.random()
-  // if (r < 0.25) {
-  //   ret.type = 'Booths'
-  //   const index = Math.min(Math.floor(Math.random() * GameData.boothIDs.length), GameData.boothIDs.length - 1)
-  //   ret.ID = GameData.boothIDs[index]
-  // }
-  // else {
-    ret.type = 'Venue'
-    ret.ID = 'TR212'
-  // }
   return ret
 }
 
@@ -244,9 +233,14 @@ export class Game extends Scene {
 
     const playerCharacterPath = localStorage.getItem('playerCharacter');
     if (playerCharacterPath) {
+      let characterY = targetTile.centerY - GameData.hexHeight;
+      if (playerCharacterPath === '/assets/人類小啄3.png') {
+        characterY -= 15;
+      }
+      
       const characterImage = this.add.image(
         targetTile.centerX,
-        targetTile.centerY - GameData.hexHeight,
+        characterY,
         'playerCharacter'
       );
       const imageScale = (GameData.hexSize * 0.55 * 2) / characterImage.width;
