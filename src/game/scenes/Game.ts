@@ -82,6 +82,7 @@ export class Game extends Scene {
   }
 
   private createInitialTiles() {
+    GameData.path = []
     const spacingX = GameData.hexWidth * 1.5
     const spacingY = GameData.hexHeight * 0.5
     const cols = GameData.screenWidth / spacingX + 1
@@ -267,14 +268,8 @@ export class Game extends Scene {
     } else {
       xCoordinate = 0
     }
-
-    if (GameData.path.length === 1) { 
-      xCoordinate = 0
-    }
     
     try {
-      console.log("boothId: ", boothId)
-      console.log("xCoordinate: ", xCoordinate)
       const apiResponse = await postCollect(boothId, xCoordinate)
       console.log('API 呼叫成功，回傳資料：', apiResponse)
       alert('板塊收集成功！')
