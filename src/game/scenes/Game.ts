@@ -150,10 +150,15 @@ export class Game extends Scene {
       }
     })
 
-    if (GameData.path.length > 8) {
+    if (GameData.path.length > 0) {
         const lastTile = GameData.path[GameData.path.length - 1];
-        const targetY = GameData.screenHeight * 0.5 - lastTile.centerY;
-        this.contentContainer.y = targetY;
+        const lastTileAbsoluteY = lastTile.y + this.contentContainer.y;
+        const scrollThreshold = GameData.screenHeight * 0.25;
+
+        if (lastTileAbsoluteY < scrollThreshold) {
+            const targetY = GameData.screenHeight * 0.5 - lastTile.centerY;
+            this.contentContainer.y = targetY;
+        }
     }
 
     const buttonSize = 60
