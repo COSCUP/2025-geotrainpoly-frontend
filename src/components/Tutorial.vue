@@ -6,18 +6,30 @@ const show = ref(false)
 const page = ref(0)
 const total = 5
 const props = defineProps<{ scene: Phaser.Scene }>()
+const images = ref<HTMLImageElement[]>([])
 
 onMounted(() => {
   const seen = localStorage.getItem("hasSeenTutorial")
   if (!seen) {
     show.value = true
     props.scene.input.enabled = false
+    for (let i = 1; i <= total; i++) {
+      const img = new Image()
+      img.onload = () => {
+        console.log(`Tutorial image ${i} loaded.`)
+      }
+      img.src = `/assets/tutorial-${i}.png`
+      images.value.push(img)
+    }
   }
 })
 
 function nextPage() {
   if (page.value < total - 1) {
-    page.value++
+    const nextImage = images.value[page.value + 1]
+    if (nextImage && nextImage.complete) {
+      page.value++
+    }
   } else {
     show.value = false
     props.scene.input.enabled = true
@@ -56,10 +68,8 @@ function nextPage() {
 }
 
 .tutorial-progress {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
   color: #fff;
   font-size: 16px;
+  padding: 8px 12px;
 }
 </style>
