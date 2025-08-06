@@ -5,8 +5,8 @@ import { marked } from 'marked'
 import { EventBus } from '../game/EventBus'
 import { GameData } from '../data/GameData.ts'
 import StartGame from '../game/main'
-import { Icon } from '@iconify/vue'
-import Danmaku from './Danmaku.vue'
+// import { Icon } from '@iconify/vue'
+// import Danmaku from './Danmaku.vue'
 import { get_hextiles_booth } from '../api/get_hextiles.ts'
 import { post_msg } from '../api/post_msg.ts'
 import Tutorial from './Tutorial.vue'
@@ -113,21 +113,21 @@ const isButtonDisabled = computed(() => {
   return newMessage.value.trim() === ''
 })
 
-function toggleLike(id: number) {
-  const index = comments.value.findIndex((c: any) => c.id === id)
-  if (comments.value[index].isLiked) {
-    comments.value[index].isLiked = false
-    comments.value[index].likes--
-  } else {
-    comments.value[index].isLiked = true
-    comments.value[index].likes++
+// function toggleLike(id: number) {
+//   const index = comments.value.findIndex((c: any) => c.id === id)
+//   if (comments.value[index].isLiked) {
+//     comments.value[index].isLiked = false
+//     comments.value[index].likes--
+//   } else {
+//     comments.value[index].isLiked = true
+//     comments.value[index].likes++
 
-    comments.value[index].animate = true
-    setTimeout(() => {
-      comments.value[index].animate = false
-    }, 300)
-  }
-}
+//     comments.value[index].animate = true
+//     setTimeout(() => {
+//       comments.value[index].animate = false
+//     }, 300)
+//   }
+// }
 
 watch([showPopup, popupData], async ([isOpen, data]) => {
   if (isOpen && data.booth.type === 'ROOMS') {
@@ -172,11 +172,11 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
               </div>
               <p class="comment-message">{{ comment.content }}</p>
             </div>
-            <div class="comment-likes">
+            <!-- <div class="comment-likes">
               <Icon v-if="comment.isLiked" icon="mdi:heart" width="24" height="24"  style="color: #f00" @click="toggleLike(comment.id)" :class="{ 'like-icon': true, 'animate': comment.animate }" />
               <Icon v-else icon="mdi:heart-outline" width="24" height="24" @click="toggleLike(comment.id)" :class="{ 'like-icon': true, 'animate': comment.animate }" />
               <p> {{ comment.likes }} </p>
-            </div>
+            </div> -->
           </div>
         </div>
         <div class="comment-form">
@@ -186,7 +186,7 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
       </div>
     </div>
   </div>
-  <Danmaku :comments="topComments" v-if="showPopup && popupData.booth.type === 'ROOMS'"/>
+  <!-- <Danmaku :comments="topComments" v-if="showPopup && popupData.booth.type === 'ROOMS'"/> -->
 </template>
 
 <style scoped>
