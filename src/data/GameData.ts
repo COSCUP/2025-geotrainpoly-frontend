@@ -8,7 +8,7 @@ export const GameData = {
   hexSize: 0,
   bottomBarHeight: 70,
   popupOpen: false,
-  apiBaseUrl: 'https://coscup.mirumo.cc/api',
+  apiBaseUrl: 'https://geotrainpoly.coscup.org/api',
   get apiToken() {
     const urlParams = new URLSearchParams(window.location.search)
     return urlParams.get('token')
