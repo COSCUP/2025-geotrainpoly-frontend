@@ -99,15 +99,15 @@ function markedIntro(intro: string) {
   return res.value
 }
 
-const topComments = computed(() => {
-  if (!Array.isArray(comments.value)) {
-    return []
-  }
-  return comments.value
-    .slice()
-    .sort((a: any, b: any) => b.likes - a.likes)
-    .slice(0, Math.min(comments.value.length, 3))
-})
+// const topComments = computed(() => {
+//   if (!Array.isArray(comments.value)) {
+//     return []
+//   }
+//   return comments.value
+//     .slice()
+//     .sort((a: any, b: any) => b.likes - a.likes)
+//     .slice(0, Math.min(comments.value.length, 3))
+// })
 
 const isButtonDisabled = computed(() => {
   return newMessage.value.trim() === ''
