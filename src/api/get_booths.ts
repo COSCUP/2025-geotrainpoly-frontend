@@ -8,6 +8,8 @@ export async function get_booths() {
     const data = await res.json()
     const booths = data.reduce(
         (acc: any, item: any) => {
+            if (item.type !== 'BOOTHS') return acc
+
             acc[item.name] = item
             return acc
         }, {}
