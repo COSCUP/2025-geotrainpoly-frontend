@@ -19,7 +19,6 @@ function phasermsg() {
 }
 
 export default defineConfig({
-  base: './',
   plugins: [
     vue(),
     phasermsg(),
