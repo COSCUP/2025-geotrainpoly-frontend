@@ -4,6 +4,9 @@ import { EventBus } from '../EventBus'
 import { GameData } from '../../data/GameData.ts'
 import { get_hextiles } from '../../api/get_hextiles.ts'
 import { postCollect } from '../../api/post_collect.ts'
+import { useToast, POSITION } from 'vue-toastification'
+
+const toast = useToast()
 
 function randomData(scene: Phaser.Scene, x: number, y: number) {
   const ret = {
@@ -264,30 +267,33 @@ export class Game extends Scene {
       xCoordinate = 0
     }
     
-    try {
-      const apiResponse = await postCollect(boothId, xCoordinate)
-      console.log('API 呼叫成功，回傳資料：', apiResponse)
-      alert('板塊收集成功！')
+    const apiResponse = await postCollect(boothId, xCoordinate)
 
-      const tile = new HexTile(randomData(this, pos.x, pos.y))
-      this.contentContainer.addAt(tile, 0)
-      GameData.path.push(tile)
-      
-      this.tweens.add({
-        targets: this.contentContainer,
-        y: Math.max(GameData.screenHeight * 0.5 - pos.y, 0),
-        duration: 600,
-        ease: 'Sine.easeInOut',
-        onComplete: () => {
-          this.addCharacterImage(tile)
-        }
+    if (!apiResponse?.ok) {
+      return toast.error(`已搜集過此板塊了`, {
+        position: POSITION.BOTTOM_CENTER,
+        timeout: 3000,
       })
-    } catch (error) {
-      const errorBody = (error as any).body
-      if (errorBody && errorBody.detail === 'Point already collected') {
-        alert('你已經收集過這個板塊了！')
-      }
     }
+
+    toast.success(`成功收集到${apiResponse.body.booth}的板塊`, {
+      position: POSITION.BOTTOM_CENTER,
+      timeout: 3000,
+    })
+
+    const tile = new HexTile(randomData(this, pos.x, pos.y))
+    this.contentContainer.addAt(tile, 0)
+    GameData.path.push(tile)
+    
+    this.tweens.add({
+      targets: this.contentContainer,
+      y: Math.max(GameData.screenHeight * 0.5 - pos.y, 0),
+      duration: 600,
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        this.addCharacterImage(tile)
+      }
+    })
   }
 
   showAllTileInfo(show: boolean) {
