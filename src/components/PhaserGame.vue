@@ -167,7 +167,7 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
           <div v-for="comment in comments" :key="comment.msg_id" class="comment-item">
             <div class="comment-content">
               <div class="comment-header">
-                <span class="comment-user">{{ comment.user.name + "．" + comment.user.title }}</span>
+                <span class="comment-user">{{ comment.user.name + "．" + (comment.user.title || "新手小啄") }}</span>
                 <span class="comment-time">{{ formatTime(comment.created_at) }}</span>
               </div>
               <p class="comment-message">{{ comment.content }}</p>

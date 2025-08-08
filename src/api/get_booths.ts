@@ -21,7 +21,9 @@ export async function get_booths_images() {
     const res = await fetch(`${API_BASE_URL}/booths`)
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`)
     const data = await res.json()
-    const boothsImages = data.reduce((acc: Record<string, string>, booth: { name: string, logo: string }) => {
+    const boothsImages = data.reduce((acc: Record<string, string>, booth: any) => {
+        if (booth.type !== 'BOOTHS') return acc
+
         if (booth.name && booth.logo) {
             acc[booth.name] = booth.logo
         }

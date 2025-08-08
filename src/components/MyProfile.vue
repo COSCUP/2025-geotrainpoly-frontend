@@ -291,8 +291,8 @@ const closeAvatarModal = () => {
 }
 
 .display-score {
-  font-size: 15px;
-  font-family: 'Zen Maru Gothic', sans-serif;
+  font-size: 20px;
+  font-family: 'M PLUS Rounded 1c', sans-serif;
   font-weight: bold;
   color: #4a4a4a;
   text-align: center;
