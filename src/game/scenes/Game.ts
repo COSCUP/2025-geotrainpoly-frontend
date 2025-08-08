@@ -8,19 +8,6 @@ import { useToast, POSITION } from 'vue-toastification'
 
 const toast = useToast()
 
-function randomData(scene: Phaser.Scene, x: number, y: number) {
-  const ret = {
-    scene: scene,
-    x: x,
-    y: y,
-    size: GameData.hexSize,
-    skew: GameData.skew,
-    type: '',
-    ID: ''
-  }
-  return ret
-}
-
 export class Game extends Scene {
   private contentContainer!: Phaser.GameObjects.Container
   private dragStartY = 0
@@ -279,20 +266,6 @@ export class Game extends Scene {
     toast.success(`成功收集到${apiResponse.body.booth}的板塊`, {
       position: POSITION.BOTTOM_CENTER,
       timeout: 3000,
-    })
-
-    const tile = new HexTile(randomData(this, pos.x, pos.y))
-    this.contentContainer.addAt(tile, 0)
-    GameData.path.push(tile)
-    
-    this.tweens.add({
-      targets: this.contentContainer,
-      y: Math.max(GameData.screenHeight * 0.5 - pos.y, 0),
-      duration: 600,
-      ease: 'Sine.easeInOut',
-      onComplete: () => {
-        this.addCharacterImage(tile)
-      }
     })
   }
 
