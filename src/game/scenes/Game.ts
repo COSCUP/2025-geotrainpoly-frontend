@@ -24,6 +24,7 @@ export class Game extends Scene {
   private containerStartY = 0
   private boothImages: string[]
   private playerCharacterImage: Phaser.GameObjects.Image | null = null;
+  private showAllInfo = false
 
   constructor(boothImages: string[]) {
     super('MainGame')
@@ -176,14 +177,14 @@ export class Game extends Scene {
     const infoBtn = this.add.image(GameData.screenWidth - 40, 40, 'no-eye').setOrigin(0.5).setScale(0.5).setInteractive()
     infoBtn.setScrollFactor(0)
 
-    infoBtn.on('pointerdown', () => {
-      this.showAllTileInfo(true)
-      infoBtn.setTexture('eye')
-    })
-
     infoBtn.on('pointerup', () => {
-      this.showAllTileInfo(false)
-      infoBtn.setTexture('no-eye')
+      this.showAllInfo = !this.showAllInfo
+      this.showAllTileInfo(this.showAllInfo)
+      if (this.showAllInfo) {
+        infoBtn.setTexture('eye')
+      } else {
+        infoBtn.setTexture('no-eye')
+      }
     })
 
     EventBus.emit('current-scene-ready', this)
