@@ -10,6 +10,7 @@ import StartGame from '../game/main'
 import { get_hextiles_booth } from '../api/get_hextiles.ts'
 import { post_msg } from '../api/post_msg.ts'
 import Tutorial from './Tutorial.vue'
+import { useRoute } from 'vue-router'
 
 const emit = defineEmits(['current-active-scene'])
 // Save the current scene instance
@@ -21,6 +22,8 @@ const comments = ref()
 const newMessage = ref('')
 const renderer = new marked.Renderer()
 const tutorialRef = ref()
+const route = useRoute()
+const token = computed(() => route.query.token)
 renderer.link = function ({href, title, text}) {
   return `<a href="${href}" target="_blank">${text}</a>`
 }
@@ -147,6 +150,10 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
 </script>
 
 <template>
+  <div v-if="!token" class="no-token-message">
+      <p>尚未登入，請先填寫參與者大調查</p>
+      <a href="https://coscup.org/2025-survey/" target="_blank" class="survey-button">點此前往問卷</a>
+  </div>
   <Tutorial ref="tutorialRef" v-if="scene" :scene="scene" />
   <div id="game-container" :style="{ bottom: `${GameData.bottomBarHeight}px` }" />
   <div class="popup-overlay" id="popup" v-if="showPopup">
@@ -364,5 +371,47 @@ img {
 
 .comment-form button:disabled {
   background-color: #aaa;
+}
+
+.no-token-message {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #111;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 101;
+  color: white;
+  text-align: center;
+}
+
+.no-token-message p {
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
+
+.no-token-message a {
+  color: white;;
+  text-decoration: underline;
+  font-size: 1.1em;
+}
+
+.survey-button {
+  background-color: gray;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+  display: inline-block;
+  text-decoration: none;
+  font-size: 1em;
+  gap: 5px;
+  -webkit-tap-highlight-color: transparent;
+  
 }
 </style>
