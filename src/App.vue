@@ -13,8 +13,8 @@ const goToBoothsList = () => {
   router.push({ path: '/booths', query: { token: token.value } })
 }
 
-const scanQRCode = () => {
-  router.push({ path: '/qrcode-scanner', query: { token: token.value } })
+const showMyQrCode = () => {
+  router.push({path: '/my-qrcode',query: { token: token.value } })
 }
 
 const goToProfile = () => {
@@ -42,9 +42,9 @@ provide('token', token)
       <span>遊戲畫面</span>
     </button>
 
-    <button class="button button-qrcode" v-else @click="scanQRCode">
-       <Icon icon="tabler:scan" class="icon" />
-      <span>掃描 QR Code</span>
+    <button class="button button-qrcode"  v-else @click="showMyQrCode">
+      <Icon icon="tabler:qrcode" class="icon"></Icon>
+      <span>顯示行動條碼</span>
     </button>
 
     <button class="button button-profile" @click="goToProfile">
