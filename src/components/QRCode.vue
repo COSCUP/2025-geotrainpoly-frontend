@@ -32,7 +32,7 @@ const onDetect = (decodedText: string) => {
 
     <button class="show-my-qr-button" @click="showMyQrCode = !showMyQrCode">
       <Icon :icon="showMyQrCode ? 'tabler:scan' : 'tabler:qrcode'" class="button-icon"></Icon>
-      <span>{{ showMyQrCode ? '掃描 QR Code' : '顯示行動條碼' }}</span>
+      <span>{{ showMyQrCode ? '掃描 QR Code' : '顯示 QR Code' }}</span>
     </button>
   </div>
 </template>

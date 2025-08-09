@@ -44,7 +44,7 @@ provide('token', token)
 
     <button class="button button-qrcode"  v-else @click="showMyQrCode">
       <Icon icon="tabler:qrcode" class="icon"></Icon>
-      <span>顯示行動條碼</span>
+      <span>顯示 QR Code</span>
     </button>
 
     <button class="button button-profile" @click="goToProfile">
