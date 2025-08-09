@@ -27,6 +27,7 @@ export class Game extends Scene {
     })
     this.load.image('eye', '/assets/eye.png')
     this.load.image('no-eye', '/assets/no-eye.png')
+    this.load.image('question', '/assets/question.png')
     let playerCharacterPath = localStorage.getItem('playerCharacter');
     
     if (!playerCharacterPath) {
@@ -175,6 +176,33 @@ export class Game extends Scene {
       } else {
         infoBtn.setTexture('no-eye')
       }
+    })
+
+    const canvas2 = this.textures.createCanvas('tutorial-button', canvaSize, canvaSize)
+    const ctx2 = canvas2!.getContext()
+
+    // set button background
+    ctx2.fillStyle = '#ffffff'
+    ctx2.beginPath()
+    ctx2.arc(canvaSize / 2, canvaSize / 2, buttonSize / 2 - 5, 0, Math.PI * 2)
+    ctx2.fill()
+
+    // add button shadow
+    ctx2.shadowColor = 'rgba(0, 0, 0, 0.3)'
+    ctx2.shadowBlur = 10
+    ctx2.shadowOffsetX = 4
+    ctx2.shadowOffsetY = 4
+    ctx2.fill()
+
+    canvas2!.refresh()
+
+    this.add.image(GameData.screenWidth - 40, 110, 'tutorial-button').setOrigin(0.5)
+
+    const tutorialBtn = this.add.image(GameData.screenWidth - 40, 110, 'question').setOrigin(0.5).setScale(0.5).setInteractive()
+    tutorialBtn.setScrollFactor(0)
+
+    tutorialBtn.on('pointerup', () => {
+      EventBus.emit('show-tutorial')
     })
 
     EventBus.emit('current-scene-ready', this)

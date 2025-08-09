@@ -20,6 +20,7 @@ const popupData = ref()
 const comments = ref()
 const newMessage = ref('')
 const renderer = new marked.Renderer()
+const tutorialRef = ref()
 renderer.link = function ({href, title, text}) {
   return `<a href="${href}" target="_blank">${text}</a>`
 }
@@ -45,9 +46,13 @@ onMounted(async () => {
     showPopup.value = true
   })
 
-   EventBus.on('add-new-hextile', (boothId: string) => {
+  EventBus.on('add-new-hextile', (boothId: string) => {
     scene.value.addNextHexTile(boothId);
-  });
+  })
+
+  EventBus.on('show-tutorial', () => {
+    tutorialRef.value?.startTutorial()
+  })
 })
 
 onUnmounted(() => {
@@ -142,7 +147,7 @@ watch([showPopup, popupData], async ([isOpen, data]) => {
 </script>
 
 <template>
-  <Tutorial v-if="scene" :scene="scene"/>
+  <Tutorial ref="tutorialRef" v-if="scene" :scene="scene" />
   <div id="game-container" :style="{ bottom: `${GameData.bottomBarHeight}px` }" />
   <div class="popup-overlay" id="popup" v-if="showPopup">
     <div class="popup-content">
