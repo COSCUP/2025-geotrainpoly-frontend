@@ -7,9 +7,9 @@ import { Icon } from '@iconify/vue'
 import { EventBus } from '../game/EventBus'
 
 const route = useRoute()
-const router = useRouter() 
+const router = useRouter()
 const token = computed(() => route.query.token)
-const showMyQrCode = ref(false)
+const showMyQrCode = ref(true)
 
 const onDetect = (decodedText: string) => {
   const boothToken = decodedText[0].rawValue
@@ -20,24 +20,24 @@ const onDetect = (decodedText: string) => {
 
 <template>
   <div class="qr-scanner-container">
-    <div v-if="!showMyQrCode" class="qr-code-scanner">
-      <qrcode-stream @detect="onDetect"></qrcode-stream>
-    </div>
-    <div v-show="showMyQrCode" class="my-qr-code-container" @click.stop="showMyQrCode = false">
+    <div v-if="showMyQrCode" class="my-qr-code-container">
       <div class="my-qr-code">
         <qrcode-vue :value="token" :size="250" />
       </div>
-      <p class="qrcode-instruction">點擊任意處回到掃描畫面</p>
     </div>
+
+    <div v-else class="qr-code-scanner">
+      <qrcode-stream @detect="onDetect"></qrcode-stream>
+    </div>
+
     <button class="show-my-qr-button" @click="showMyQrCode = !showMyQrCode">
-      <Icon icon="tabler:qrcode" class="qr-code-icon"></Icon>
-      <span>顯示行動條碼</span>
+      <Icon :icon="showMyQrCode ? 'tabler:scan' : 'tabler:qrcode'" class="button-icon"></Icon>
+      <span>{{ showMyQrCode ? '掃描 QR Code' : '顯示 QR Code' }}</span>
     </button>
   </div>
 </template>
 
 <style scoped>
-
 .qr-scanner-container {
   position: fixed;
   top: 0;
@@ -61,7 +61,6 @@ const onDetect = (decodedText: string) => {
   width: 90vw;
   aspect-ratio: 1 / 1;
   z-index: 100;
-
   border: 10px solid #f30000;
 }
 
@@ -115,9 +114,10 @@ const onDetect = (decodedText: string) => {
   justify-content: center;
   font-size: 1em;
   gap: 5px;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.qr-code-icon {
+.button-icon {
   width: 20px;
   height: 20px;
 }

@@ -11,18 +11,28 @@ const images = ref<HTMLImageElement[]>([])
 onMounted(() => {
   const seen = localStorage.getItem("hasSeenTutorial")
   if (!seen) {
-    show.value = true
-    props.scene.input.enabled = false
-    for (let i = 1; i <= total; i++) {
-      const img = new Image()
-      img.onload = () => {
-        console.log(`Tutorial image ${i} loaded.`)
-      }
-      img.src = `/assets/tutorial-${i}.png`
-      images.value.push(img)
-    }
+    startTutorial()
   }
 })
+
+defineExpose({
+  startTutorial
+})
+
+function startTutorial() {
+  page.value = 0
+  show.value = true
+  props.scene.input.enabled = false
+  images.value = []
+  for (let i = 1; i <= total; i++) {
+    const img = new Image()
+    img.onload = () => {
+      console.log(`Tutorial image ${i} loaded.`)
+    }
+    img.src = `/assets/tutorial-${i}.png`
+    images.value.push(img)
+  }
+}
 
 function nextPage() {
   if (page.value < total - 1) {
